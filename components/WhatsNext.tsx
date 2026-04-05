@@ -1,13 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Step, PHASES } from "@/lib/steps";
+import { fmtDuration } from "@/lib/utils";
 
 type Props = {
   next: Step | null;
+  prevCompletedAt: string | null; // completed_at of the step right before `next`
 };
 
-export function WhatsNext({ next }: Props) {
+export function WhatsNext({ next, prevCompletedAt }: Props) {
+  const [elapsed, setElapsed] = useState("");
+
+  useEffect(() => {
+    if (!prevCompletedAt) { setElapsed(""); return; }
+    function tick() {
+      const ms = Date.now() - new Date(prevCompletedAt!).getTime();
+      setElapsed(fmtDuration(ms));
+    }
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [prevCompletedAt]);
+
   if (!next) {
     return (
       <motion.div
@@ -29,7 +45,6 @@ export function WhatsNext({ next }: Props) {
   }
 
   const phase = PHASES[next.phase];
-  // Derive a plain-text preview from the first couple of step blocks
   const preview = next.blocks
     .filter((b) => b.type === "step")
     .slice(0, 2)
@@ -59,9 +74,14 @@ export function WhatsNext({ next }: Props) {
           {phase.short} · {next.week}
         </span>
       </div>
-      <div className="text-[17px] sm:text-lg font-semibold text-text-primary mb-1.5 leading-snug">
+      <div className="text-[17px] sm:text-lg font-semibold text-text-primary mb-1 leading-snug">
         {next.title}
       </div>
+      {elapsed && (
+        <div className="text-[12px] text-text-muted font-medium mb-1.5">
+          In progress for {elapsed}
+        </div>
+      )}
       <div className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
         {preview}
       </div>

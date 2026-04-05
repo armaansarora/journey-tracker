@@ -9,9 +9,21 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Journey Realty Group — AI Automation Project",
+  title: "Journey Realty Group — AI Automation Tracker",
   description:
-    "Building an autonomous AI business operator for a NYC real estate company. Track the 34-step implementation roadmap.",
+    "34-step implementation roadmap for building an autonomous AI business operator for a NYC real estate company.",
+  openGraph: {
+    title: "Journey Realty Group — AI Automation Tracker",
+    description:
+      "34-step implementation roadmap for building an autonomous AI business operator for a NYC real estate company.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Journey Realty Group — AI Automation Tracker",
+    description:
+      "34-step implementation roadmap for building an autonomous AI business operator for a NYC real estate company.",
+  },
 };
 
 export default function RootLayout({

@@ -12,4 +12,12 @@ export type StepRow = {
   completed: boolean;
   completed_at: string | null;
   updated_at: string;
+  notes: string;
+};
+
+export type ActivityLogRow = {
+  id: number;
+  step_id: string;
+  action: "completed" | "uncompleted";
+  created_at: string;
 };

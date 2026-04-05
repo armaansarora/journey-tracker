@@ -16,6 +16,9 @@ export type Step = {
   tool: string;
   blocks: Block[];
   done_when: string;
+  monthly_cost: number;
+  one_time_cost: number;
+  dependencies: string[];
 };
 
 // Block constructors (keep data compact)
@@ -43,6 +46,7 @@ export const STEPS: Step[] = [
       tip("$14 per user/month = $42/month total. Includes Gmail, Drive, and Calendar under one admin console with enterprise controls."),
     ],
     done_when: "All 3 users can log in to Gmail and Google Drive with their company accounts.",
+    monthly_cost: 42, one_time_cost: 0, dependencies: [],
   },
   {
     id: "a2", phase: "A", week: "Week 1", title: "Create Google Shared Drive", tool: "Google Admin Console",
@@ -54,6 +58,7 @@ export const STEPS: Step[] = [
       tip("Shared Drives are company-owned — unlike personal My Drive folders, files persist even when someone leaves the company."),
     ],
     done_when: "All 3 users see \"Journey Realty Group\" in their Google Drive left sidebar under Shared Drives.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a1"],
   },
   {
     id: "a3", phase: "A", week: "Week 1", title: "Set up Google Cloud service account with Domain-Wide Delegation", tool: "Google Cloud Console",
@@ -73,6 +78,7 @@ export const STEPS: Step[] = [
       tip("This is what lets the AI agent access Google services 24/7 without any human logging in."),
     ],
     done_when: "You can run a Python script using the service account JSON key that successfully lists files in the Google Shared Drive.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a1"],
   },
   {
     id: "a4", phase: "A", week: "Week 1", title: "Set up Google Cloud Pub/Sub for Gmail notifications", tool: "Google Cloud Console",
@@ -85,6 +91,7 @@ export const STEPS: Step[] = [
       tip("This tells Gmail to push a notification the moment a new email arrives — no polling required."),
     ],
     done_when: "You send a test email to one of the Google Workspace accounts and a notification message appears in your Pub/Sub subscription within seconds.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a3"],
   },
   {
     id: "a5", phase: "A", week: "Week 1", title: "Download OneDrive files and start organizing", tool: "Claude Code",
@@ -98,6 +105,7 @@ export const STEPS: Step[] = [
       tip("If you're unsure where a file goes, put it in a \"To-Sort\" pile and ask Selim."),
     ],
     done_when: "Every file is in the correct folder with the correct name following the YYYY-MM-DD Description v# convention.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: [],
   },
   {
     id: "a6", phase: "A", week: "Week 2", title: "Upload organized files to Google Shared Drive", tool: "Claude Code or rclone",
@@ -107,6 +115,7 @@ export const STEPS: Step[] = [
       s("**Write a short rules document** (one page) explaining the folder structure and naming convention; place it at the root of the Drive"),
     ],
     done_when: "Selim can open Google Drive, navigate the folder structure, and find any specific file in under 10 seconds.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a2","a5"],
   },
   {
     id: "a7", phase: "A", week: "Week 2", title: "Walk Selim through the new folder structure", tool: "Screen share or in person",
@@ -118,6 +127,7 @@ export const STEPS: Step[] = [
       imp("This is a people step, not a tech step. His buy-in is critical. If he doesn't trust the system, he won't use it."),
     ],
     done_when: "Selim says \"I get it,\" successfully drops a test file in Inbox-To-Sort, and doesn't have questions about where things live.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a6"],
   },
   {
     id: "a8", phase: "A", week: "Week 2", title: "Provision Hetzner CX41 VPS", tool: "Hetzner Cloud Console",
@@ -134,6 +144,7 @@ export const STEPS: Step[] = [
       s("**Click Create** — server is ready in ~60 seconds"),
     ],
     done_when: "You can run \"ssh root@your-server-ip\" from your terminal and land in a shell.",
+    monthly_cost: 16, one_time_cost: 0, dependencies: [],
   },
   {
     id: "a9", phase: "A", week: "Week 2", title: "Harden VPS security + install Coolify", tool: "SSH Terminal",
@@ -149,6 +160,7 @@ export const STEPS: Step[] = [
       tip("Coolify is a self-hosted platform that manages Docker containers, SSL certificates, and deployments through a web dashboard. Install takes ~5 minutes."),
     ],
     done_when: "Coolify dashboard loads at your-server-ip:8000, and SSH only works on port 2222 with your key (not root, not password).",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a8"],
   },
   {
     id: "a10", phase: "A", week: "Week 3", title: "Set up Git repo + Docker Compose + deploy via Coolify", tool: "GitHub + Coolify",
@@ -170,6 +182,7 @@ export const STEPS: Step[] = [
       s("**Enable auto-deploy** on push to the `main` branch"),
     ],
     done_when: "You push to GitHub, Coolify automatically builds and starts all containers, and all 10 show \"healthy\" in the Coolify dashboard.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a9"],
   },
   {
     id: "a11", phase: "A", week: "Week 3", title: "Configure LiteLLM with model routing", tool: "config/litellm_config.yaml",
@@ -185,6 +198,7 @@ export const STEPS: Step[] = [
       tip("Prompt caching is critical for the filing agent's 20-min heartbeat — it keeps the system prompt warm between runs."),
     ],
     done_when: "You can POST to http://litellm:4000/chat/completions and get a Sonnet 4.6 response, with cost logged in LiteLLM's spend table.",
+    monthly_cost: 15, one_time_cost: 0, dependencies: ["a10"],
   },
   {
     id: "a12", phase: "A", week: "Week 3", title: "Verify Langfuse tracing works", tool: "Browser",
@@ -198,6 +212,7 @@ export const STEPS: Step[] = [
       tip("If ClickHouse eats too much RAM, swap to Langfuse Cloud's free tier (50K observations/month) by changing one env var."),
     ],
     done_when: "You can see a complete trace in Langfuse's web UI with model name, token count, latency, and cost breakdown.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a10","a11"],
   },
   {
     id: "a13", phase: "A", week: "Week 3", title: "Point domain + set up SSL certificates", tool: "DNS provider + Coolify",
@@ -212,6 +227,7 @@ export const STEPS: Step[] = [
       tip("Traefik handles Let's Encrypt SSL certificates and HTTPS redirects automatically — no manual certificate management."),
     ],
     done_when: "All three subdomains load in your browser over HTTPS with valid SSL certificates (green lock icon).",
+    monthly_cost: 1, one_time_cost: 12, dependencies: ["a9"],
   },
   {
     id: "a14", phase: "A", week: "Week 4", title: "Deploy LightRAG and ingest all Google Drive files", tool: "LightRAG + Python",
@@ -228,6 +244,7 @@ export const STEPS: Step[] = [
       tip("Total cost to embed the full 266 MB corpus: approximately $0.50."),
     ],
     done_when: "You can ask LightRAG \"what does Jean's lease say about pets?\" and get a relevant, accurate answer.",
+    monthly_cost: 0, one_time_cost: 0.5, dependencies: ["a6","a10"],
   },
   {
     id: "a15", phase: "A", week: "Week 4", title: "Configure Mem0 inside the Journey Agent App", tool: "Python",
@@ -243,6 +260,7 @@ export const STEPS: Step[] = [
       code("memory.add(\"Selim prefers Apex for plumbing\", user_id=\"selim\")\nmemory.search(\"who does Selim like for plumbing?\", user_id=\"selim\")"),
     ],
     done_when: "You can store facts about Selim and Najat, retrieve them by semantic search, and verify Selim's memories don't appear when you search Najat's.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a10"],
   },
   {
     id: "a16", phase: "A", week: "Week 4", title: "Create Telegram bot + wire up webhook", tool: "Telegram BotFather + Python",
@@ -258,6 +276,7 @@ export const STEPS: Step[] = [
       warn("Don't use MarkdownV2 — it requires escaping 18 special characters and will bite you."),
     ],
     done_when: "You send \"hello\" to the bot and it responds; messages from unauthorized users get rejected.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a9","a13"],
   },
   {
     id: "a17", phase: "A", week: "Week 4", title: "Set up nightly backups to Backblaze B2", tool: "Cron + B2 CLI",
@@ -275,6 +294,7 @@ export const STEPS: Step[] = [
       tip("Cost: approximately $0.50/month."),
     ],
     done_when: "You can download yesterday's backup from B2, restore it to a fresh PostgreSQL instance, and verify all 4 databases contain the correct data.",
+    monthly_cost: 0.5, one_time_cost: 0, dependencies: ["a10"],
   },
 
   {
@@ -295,6 +315,7 @@ export const STEPS: Step[] = [
       tip("This is your sandbox — mistakes here are free and fast to fix. Iterate on the classification prompt until it gets most files right."),
     ],
     done_when: "Drop a receipt in Inbox-To-Sort and the n8n workflow identifies it as a receipt, determines its property, and shows the correct destination path.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["a10"],
   },
   {
     id: "b19", phase: "B", week: "Weeks 5–7", title: "Convert n8n filing workflow to Python with Claude Code", tool: "Claude Code + GSD",
@@ -311,6 +332,7 @@ export const STEPS: Step[] = [
       ], "Claude Code will produce:"),
     ],
     done_when: "The Python module can classify a document, determine the correct folder, and move it — with full LangGraph checkpointing to PostgreSQL so it survives crashes.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b18"],
   },
   {
     id: "b20", phase: "B", week: "Weeks 5–7", title: "Add Mem0 + LightRAG disambiguation to filing agent", tool: "Python",
@@ -326,6 +348,7 @@ export const STEPS: Step[] = [
       tip("If Selim was chatting about The Evergreen's kitchen reno yesterday, Mem0 tips the balance toward filing an Amazon receipt there."),
     ],
     done_when: "The agent correctly attributes an ambiguous receipt to The Evergreen because Mem0 knows Selim was discussing that property's renovation yesterday.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b19","a14","a15"],
   },
   {
     id: "b21", phase: "B", week: "Weeks 5–7", title: "Build the heartbeat scheduler for filing agent", tool: "APScheduler",
@@ -342,6 +365,7 @@ export const STEPS: Step[] = [
       ], "Critical APScheduler settings:"),
     ],
     done_when: "You drop a file in Inbox-To-Sort, do nothing, and within 20 minutes the file is automatically classified, renamed, and filed.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b19"],
   },
   {
     id: "b22", phase: "B", week: "Weeks 5–7", title: "Build Telegram approval flow for uncertain filings", tool: "python-telegram-bot",
@@ -355,6 +379,7 @@ export const STEPS: Step[] = [
       s("**Enable PostgresPersistence** so the callback data cache survives bot restarts"),
     ],
     done_when: "Selim taps a property button in Telegram and the file gets filed to the correct location — without typing anything.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b21","a16"],
   },
   {
     id: "b23", phase: "B", week: "Weeks 5–7", title: "Shadow deploy the filing agent", tool: "Production VPS",
@@ -367,6 +392,7 @@ export const STEPS: Step[] = [
       imp("Goal: >90% accuracy before turning off shadow mode."),
     ],
     done_when: "Agent has processed a full week of real files in shadow mode with >90% accuracy, and Selim trusts its judgment.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b20","b21","b22"],
   },
   {
     id: "b24", phase: "B", week: "Weeks 7–9", title: "Build email agent (n8n → Python)", tool: "n8n → Claude Code",
@@ -389,6 +415,7 @@ export const STEPS: Step[] = [
       ], "EmailState TypedDict fields:"),
     ],
     done_when: "An email from Apex Construction about an invoice arrives, and the agent drafts a contextually appropriate response referencing the correct project and contract terms.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b23","a4"],
   },
   {
     id: "b25", phase: "B", week: "Weeks 7–9", title: "Build email approval flow in Telegram", tool: "python-telegram-bot",
@@ -406,6 +433,7 @@ export const STEPS: Step[] = [
       s("**Edit flow:** Selim types his correction in natural language → agent revises the draft → re-presents with fresh buttons"),
     ],
     done_when: "Selim receives a draft email notification in Telegram, taps [Approve], and the email sends through Gmail without him opening an email client.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b24","a16"],
   },
   {
     id: "b26", phase: "B", week: "Weeks 9–11", title: "Build expense agent", tool: "Claude Code",
@@ -418,6 +446,7 @@ export const STEPS: Step[] = [
       s("**Cross-reference Mem0 + LightRAG** for property attribution and vendor contract consistency"),
     ],
     done_when: "Selim drops a receipt photo → filing files it to The Evergreen's Finances folder → expense agent logs $247 → Selim gets one Telegram notification confirming both actions.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b23"],
   },
   {
     id: "b27", phase: "B", week: "Weeks 9–11", title: "Build archive agent", tool: "Claude Code",
@@ -435,6 +464,7 @@ export const STEPS: Step[] = [
       tip("Leave the security deposit resolution file in the active folder until the next tenant moves in."),
     ],
     done_when: "Telegram message → plan presented → Najat approves → files archived → Mem0 updated → confirmation sent.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b23"],
   },
   {
     id: "b28", phase: "B", week: "Weeks 9–11", title: "Build orchestrator supervisor graph", tool: "Claude Code",
@@ -454,6 +484,7 @@ export const STEPS: Step[] = [
       warn("Add an iteration guard (max 10 loops) to prevent infinite delegation between agents."),
     ],
     done_when: "\"file this receipt\" → orchestrator → filing → expense → notification, all in one flow with a single Telegram confirmation.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b26","b27"],
   },
   {
     id: "b29", phase: "B", week: "Weeks 11–13", title: "Build morning digest", tool: "APScheduler + Telegram",
@@ -474,6 +505,7 @@ export const STEPS: Step[] = [
       tip("Skip logic prevents notification fatigue — if the digest always fires, it stops being read."),
     ],
     done_when: "Selim wakes at 8 AM, checks Telegram, sees a useful overnight summary with buttons to approve pending items — without opening any other app.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b28","a16"],
   },
   {
     id: "b30", phase: "B", week: "Weeks 11–13", title: "Security hardening", tool: "Python + PostgreSQL",
@@ -494,6 +526,7 @@ export const STEPS: Step[] = [
       imp("An audit log you can edit is not an audit log. The app's database role must have INSERT-only permission."),
     ],
     done_when: "Audit log tamper-proof, PII scanner catches SSNs with >95% recall, injection attempts blocked across all agents, kill switch works in <60s.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b28"],
   },
   {
     id: "b31", phase: "B", week: "Weeks 11–13", title: "Full production launch", tool: "Everything",
@@ -511,6 +544,7 @@ export const STEPS: Step[] = [
       tip("After one clean week with no major issues, the system is officially live."),
     ],
     done_when: "All agents have run a full week handling real operations, with no human intervention beyond normal Tier 3 approvals. Selim and Najat confirm they're comfortable.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b29","b30"],
   },
 
   {
@@ -530,6 +564,7 @@ export const STEPS: Step[] = [
       s("**Deploy to Vercel's free tier** — dashboard runs on Vercel (zero VPS RAM), connects to Hetzner backend via API"),
     ],
     done_when: "Authenticated dashboard loads at dashboard.yourdomain.com, Selim and Najat log in via Google, bottom tab nav works on mobile.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["b28"],
   },
   {
     id: "c33", phase: "C", week: "Weeks 14–17", title: "Build Dashboard V1: activity feed, approvals, expenses, tenants", tool: "Next.js + shadcn/ui",
@@ -555,6 +590,7 @@ export const STEPS: Step[] = [
       imp("Mobile-first. Minimum 44px touch targets on ALL interactive elements."),
     ],
     done_when: "Selim can check activity, approve an email, see this month's Evergreen spend, and look up a tenant's lease end date — all from his phone.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["c32"],
   },
   {
     id: "c34", phase: "C", week: "Weeks 18–20", title: "Build remaining 8 dashboard sections + PWA", tool: "Next.js",
@@ -578,6 +614,7 @@ export const STEPS: Step[] = [
       tip("iOS supports PWA push notifications since 16.4."),
     ],
     done_when: "All 12 sections live, Najat searches \"when does Jean's lease end?\" and gets an answer, both partners have PWA installed, audit log exports a compliance report.",
+    monthly_cost: 0, one_time_cost: 0, dependencies: ["c33"],
   },
 ];
 
