@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Step, PHASES, toolCategory, TOOL_STYLES } from "@/lib/steps";
+import { StepBlocks } from "./StepBlocks";
 
 type Props = {
   step: Step;
@@ -186,10 +187,8 @@ export function StepCard({ step, index, completed, isCurrent, onToggle }: Props)
                 </span>
               </div>
 
-              {/* Instructions */}
-              <div className="text-[14px] sm:text-[15px] text-text-secondary leading-[1.7] whitespace-pre-line">
-                {step.details}
-              </div>
+              {/* Instructions — structured blocks */}
+              <StepBlocks blocks={step.blocks} />
 
               {/* Divider */}
               <div className="h-px bg-border" />

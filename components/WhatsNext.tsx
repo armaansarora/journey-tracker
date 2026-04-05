@@ -29,6 +29,12 @@ export function WhatsNext({ next }: Props) {
   }
 
   const phase = PHASES[next.phase];
+  // Derive a plain-text preview from the first couple of step blocks
+  const preview = next.blocks
+    .filter((b) => b.type === "step")
+    .slice(0, 2)
+    .map((b) => (b as { type: "step"; text: string }).text.replace(/\*\*/g, "").replace(/`/g, ""))
+    .join(" ");
 
   return (
     <motion.a
@@ -57,7 +63,7 @@ export function WhatsNext({ next }: Props) {
         {next.title}
       </div>
       <div className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
-        {next.details}
+        {preview}
       </div>
       <div className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue">
         Jump to step
