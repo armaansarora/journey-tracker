@@ -8,59 +8,75 @@ type Props = {
   phase: Phase;
   steps: Step[];
   completedIds: Set<string>;
+  currentStepId: string | null;
   onToggle: (id: string, next: boolean) => void;
+  startIndex: number;
 };
 
-export function PhaseSection({ phase, steps, completedIds, onToggle }: Props) {
+export function PhaseSection({
+  phase,
+  steps,
+  completedIds,
+  currentStepId,
+  onToggle,
+  startIndex,
+}: Props) {
   const meta = PHASES[phase];
   const done = steps.filter((s) => completedIds.has(s.id)).length;
   const pct = steps.length > 0 ? (done / steps.length) * 100 : 0;
 
   return (
-    <section
-      className="rounded-2xl p-5 sm:p-6"
-      style={{ backgroundColor: meta.light + "66" }}
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="mb-5 sm:mb-6">
-        <div className="flex items-center gap-3 mb-3 flex-wrap">
+      {/* Phase header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 sm:gap-4 mb-4">
           <span
-            className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold text-white"
-            style={{ backgroundColor: meta.accent }}
+            className="inline-flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-xl text-xl sm:text-2xl font-bold text-white shrink-0 shadow-sm"
+            style={{
+              backgroundColor: meta.accent,
+              boxShadow: `0 4px 14px ${meta.accent}33`,
+            }}
           >
             {phase}
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg sm:text-xl font-semibold text-text-primary leading-tight">
+            <h2 className="text-xl sm:text-2xl font-semibold text-text-primary leading-tight tracking-tight">
               {meta.title}
             </h2>
-            <div className="text-xs sm:text-sm text-text-secondary">{meta.weeks}</div>
-          </div>
-          <div className="text-xs sm:text-sm font-medium text-text-secondary shrink-0 tabular-nums">
-            {done} of {steps.length}
+            <div className="text-xs sm:text-sm text-text-muted mt-0.5 font-medium">
+              {meta.weeks} · {done} of {steps.length} complete
+            </div>
           </div>
         </div>
-        <div className="h-2 w-full rounded-full bg-white border border-border overflow-hidden">
+        <div className="h-1.5 w-full rounded-full bg-surface-hover overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            whileInView={{ width: `${pct}%` }}
+            viewport={{ once: false }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="h-full rounded-full"
             style={{ backgroundColor: meta.accent }}
           />
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {steps.map((s, i) => (
           <StepCard
             key={s.id}
             step={s}
-            index={i}
+            index={startIndex + i}
             completed={completedIds.has(s.id)}
+            isCurrent={currentStepId === s.id}
             onToggle={onToggle}
           />
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }

@@ -9,42 +9,53 @@ type Props = {
   size?: number;
 };
 
-export function ProgressRing({ completed, total, size = 180 }: Props) {
+export function ProgressRing({ completed, total, size = 200 }: Props) {
   const pct = total > 0 ? completed / total : 0;
-  const stroke = 12;
+  const stroke = 14;
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
-
-  // color transition: blue (low) → green (high)
-  const color = pct < 0.33 ? "#2563EB" : pct < 0.75 ? "#0EA5A4" : "#059669";
 
   const progressValue = useMotionValue(0);
   const dashOffset = useTransform(progressValue, (v) => circ - v * circ);
   const [displayPct, setDisplayPct] = useState(0);
+  const [displayDone, setDisplayDone] = useState(0);
 
   useEffect(() => {
     const controls = animate(progressValue, pct, {
-      duration: 1.2,
+      duration: 1.3,
       ease: [0.22, 1, 0.36, 1],
     });
     const unsub = progressValue.on("change", (v) => {
       setDisplayPct(Math.round(v * 100));
+      setDisplayDone(Math.round(v * total));
     });
     return () => {
       controls.stop();
       unsub();
     };
-  }, [pct, progressValue]);
+  }, [pct, progressValue, total]);
+
+  const gradientId = "ring-gradient";
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90">
+        <defs>
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#2563EB" />
+            <stop offset="50%" stopColor="#0EA5A4" />
+            <stop offset="100%" stopColor="#059669" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="#E5E7EB"
+          stroke="#F1F5F9"
           strokeWidth={stroke}
         />
         <motion.circle
@@ -52,7 +63,7 @@ export function ProgressRing({ completed, total, size = 180 }: Props) {
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={color}
+          stroke={`url(#${gradientId})`}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circ}
@@ -60,11 +71,12 @@ export function ProgressRing({ completed, total, size = 180 }: Props) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-semibold tabular-nums text-text-primary">
-          {displayPct}%
+        <span className="text-[44px] font-semibold tabular-nums text-text-primary leading-none tracking-tight">
+          {displayPct}
+          <span className="text-2xl text-text-muted">%</span>
         </span>
-        <span className="text-xs text-text-secondary mt-1 font-medium">
-          {completed} of {total}
+        <span className="text-[13px] text-text-secondary mt-2 font-medium tabular-nums">
+          {displayDone} of {total} complete
         </span>
       </div>
     </div>

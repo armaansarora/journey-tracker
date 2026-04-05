@@ -2,42 +2,55 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Step, PHASES } from "@/lib/steps";
+import { Step, PHASES, toolCategory, TOOL_STYLES } from "@/lib/steps";
 
 type Props = {
   step: Step;
   index: number;
   completed: boolean;
+  isCurrent: boolean;
   onToggle: (id: string, next: boolean) => void;
 };
 
-export function StepCard({ step, index, completed, onToggle }: Props) {
+export function StepCard({ step, index, completed, isCurrent, onToggle }: Props) {
   const [expanded, setExpanded] = useState(false);
   const phase = PHASES[step.phase];
+  const toolStyle = TOOL_STYLES[toolCategory(step.tool)];
 
-  const status = completed ? "Done" : expanded ? "In Progress" : "Pending";
-  const statusColors = completed
-    ? { color: "#059669", bg: "#ECFDF5", border: "#A7F3D0" }
-    : expanded
-    ? { color: "#2563EB", bg: "#EFF6FF", border: "#DBEAFE" }
-    : { color: "#D97706", bg: "#FFFBEB", border: "#FDE68A" };
+  const leftBorderColor = completed ? "#059669" : phase.accent;
 
   return (
     <motion.div
       layout
       id={`step-${step.id}`}
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.35, delay: Math.min(index * 0.03, 0.3), ease: [0.22, 1, 0.36, 1] }}
-      className={`overflow-hidden rounded-xl border bg-white transition-colors ${
-        completed ? "border-green-border" : "border-border hover:border-text-muted"
+      transition={{ duration: 0.4, delay: Math.min(index * 0.025, 0.25), ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -2 }}
+      className={`group relative overflow-hidden rounded-xl border bg-white transition-[border-color,box-shadow,background-color] duration-200 ${
+        completed
+          ? "border-green-border shadow-[0_1px_2px_rgba(5,150,105,0.06)]"
+          : "border-border shadow-[0_1px_2px_rgba(17,24,39,0.04)] hover:border-[#CBD5E1] hover:shadow-[0_4px_12px_rgba(17,24,39,0.06)]"
       }`}
       style={{
-        borderLeftWidth: 4,
-        borderLeftColor: completed ? "#059669" : phase.accent,
+        backgroundColor: completed ? "#F6FDF9" : "#FFFFFF",
       }}
     >
+      {/* Left border accent */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1"
+        style={{ backgroundColor: leftBorderColor }}
+      />
+      {isCurrent && !completed && (
+        <motion.div
+          className="absolute left-0 top-0 bottom-0 w-1"
+          style={{ backgroundColor: phase.accent }}
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+      )}
+
       <div
         role="button"
         tabIndex={0}
@@ -48,7 +61,7 @@ export function StepCard({ step, index, completed, onToggle }: Props) {
             setExpanded((v) => !v);
           }
         }}
-        className="w-full cursor-pointer text-left px-4 py-4 sm:px-5 flex items-center gap-3 sm:gap-4 hover:bg-surface-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue focus-visible:ring-inset"
+        className="w-full cursor-pointer text-left pl-5 pr-4 py-4 sm:pl-6 sm:pr-5 flex items-center gap-3 sm:gap-4 hover:bg-surface-hover/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue focus-visible:ring-inset"
         aria-expanded={expanded}
       >
         {/* Completion circle */}
@@ -74,22 +87,24 @@ export function StepCard({ step, index, completed, onToggle }: Props) {
           <motion.div
             animate={
               completed
-                ? { scale: [1, 1.15, 1], backgroundColor: "#059669", borderColor: "#059669" }
+                ? { scale: [1, 1.2, 1], backgroundColor: "#059669", borderColor: "#059669" }
+                : isCurrent
+                ? { scale: 1, backgroundColor: "#FFFFFF", borderColor: phase.accent }
                 : { scale: 1, backgroundColor: "#FFFFFF", borderColor: "#D1D5DB" }
             }
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="h-9 w-9 rounded-full border-2 flex items-center justify-center"
+            transition={{ duration: 0.4, ease: [0.22, 1.2, 0.36, 1] }}
+            className="h-10 w-10 rounded-full border-2 flex items-center justify-center"
           >
-            <AnimatePresence>
-              {completed && (
+            <AnimatePresence mode="wait">
+              {completed ? (
                 <motion.svg
                   key="check"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.2 }}
-                  width="16"
-                  height="16"
+                  initial={{ opacity: 0, scale: 0.4, rotate: -20 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.4 }}
+                  transition={{ duration: 0.25, ease: [0.22, 1.2, 0.36, 1] }}
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="#fff"
@@ -99,34 +114,30 @@ export function StepCard({ step, index, completed, onToggle }: Props) {
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </motion.svg>
+              ) : (
+                <motion.span
+                  key="num"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-xs font-semibold tabular-nums"
+                  style={{ color: isCurrent ? phase.accent : "#9CA3AF" }}
+                >
+                  {index + 1}
+                </motion.span>
               )}
             </AnimatePresence>
-            {!completed && (
-              <span className="text-xs font-semibold text-text-muted tabular-nums">
-                {index + 1}
-              </span>
-            )}
           </motion.div>
         </div>
 
         {/* Title + week */}
         <div className="min-w-0 flex-1">
-          <div className="text-[13px] sm:text-sm text-text-muted font-medium">{step.week}</div>
-          <div className={`text-sm sm:text-base font-semibold leading-snug ${completed ? "text-text-secondary" : "text-text-primary"}`}>
+          <div className="text-[11px] sm:text-xs text-text-muted font-semibold uppercase tracking-wider">
+            {step.week}
+          </div>
+          <div className={`mt-0.5 text-[15px] sm:text-base font-semibold leading-snug ${completed ? "text-text-secondary" : "text-text-primary"}`}>
             {step.title}
           </div>
-        </div>
-
-        {/* Status badge */}
-        <div
-          className="shrink-0 text-xs font-medium px-2.5 py-1 rounded-full border hidden sm:inline-block"
-          style={{
-            color: statusColors.color,
-            backgroundColor: statusColors.bg,
-            borderColor: statusColors.border,
-          }}
-        >
-          {status}
         </div>
 
         {/* Chevron */}
@@ -157,39 +168,54 @@ export function StepCard({ step, index, completed, onToggle }: Props) {
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="px-4 sm:px-5 pb-5 pt-1 space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+            <div className="pl-5 pr-4 pb-5 sm:pl-6 sm:pr-5 space-y-4">
+              {/* Tool badge */}
+              <div className="flex items-center gap-2 flex-wrap pt-1">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-text-muted">
                   Tool
                 </span>
                 <span
-                  className="text-xs font-medium px-2.5 py-1 rounded-full border"
+                  className="text-xs font-semibold px-2.5 py-1 rounded-md border"
                   style={{
-                    color: phase.accent,
-                    backgroundColor: phase.light,
-                    borderColor: phase.border,
+                    color: toolStyle.color,
+                    backgroundColor: toolStyle.bg,
+                    borderColor: toolStyle.border,
                   }}
                 >
                   {step.tool}
                 </span>
               </div>
 
-              <div className="text-sm text-text-secondary leading-relaxed">
+              {/* Instructions */}
+              <div className="text-[14px] sm:text-[15px] text-text-secondary leading-[1.7] whitespace-pre-line">
                 {step.details}
               </div>
 
+              {/* Divider */}
+              <div className="h-px bg-border" />
+
+              {/* Done when */}
               <div
-                className="rounded-lg border p-3 text-sm"
+                className="rounded-lg border p-4 flex gap-3"
                 style={{
-                  backgroundColor: completed ? "#ECFDF5" : "#F9FAFB",
-                  borderColor: completed ? "#A7F3D0" : "#E5E7EB",
+                  backgroundColor: "#ECFDF5",
+                  borderColor: "#A7F3D0",
                 }}
               >
-                <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: completed ? "#059669" : "#6B7280" }}>
-                  Done when
+                <div className="shrink-0 mt-0.5">
+                  <div className="h-5 w-5 rounded-full bg-green flex items-center justify-center">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
                 </div>
-                <div className={completed ? "text-green" : "text-text-primary"}>
-                  {step.done_when}
+                <div className="min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-green mb-1">
+                    Done when
+                  </div>
+                  <div className="text-[14px] text-[#065F46] leading-[1.6]">
+                    {step.done_when}
+                  </div>
                 </div>
               </div>
             </div>

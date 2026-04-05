@@ -14,12 +14,10 @@ export default function HomePage() {
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [loaded, setLoaded] = useState(false);
 
-  // Seed + fetch initial state
   useEffect(() => {
     let mounted = true;
 
     async function init() {
-      // Seed rows that don't exist yet (upsert with ignoreDuplicates)
       const seedRows = STEPS.map((s) => ({
         id: s.id,
         completed: false,
@@ -48,7 +46,6 @@ export default function HomePage() {
 
     init();
 
-    // Realtime subscription
     const channel = supabase
       .channel("steps-realtime")
       .on(
@@ -73,39 +70,34 @@ export default function HomePage() {
     };
   }, []);
 
-  const toggle = useCallback(
-    async (id: string, nextCompleted: boolean) => {
-      // Optimistic update
+  const toggle = useCallback(async (id: string, nextCompleted: boolean) => {
+    setCompletedIds((prev) => {
+      const next = new Set(prev);
+      if (nextCompleted) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+    const { error } = await supabase.from("steps").upsert(
+      {
+        id,
+        completed: nextCompleted,
+        completed_at: nextCompleted ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+
+    if (error) {
       setCompletedIds((prev) => {
         const next = new Set(prev);
-        if (nextCompleted) next.add(id);
-        else next.delete(id);
+        if (nextCompleted) next.delete(id);
+        else next.add(id);
         return next;
       });
-
-      const { error } = await supabase.from("steps").upsert(
-        {
-          id,
-          completed: nextCompleted,
-          completed_at: nextCompleted ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" }
-      );
-
-      if (error) {
-        // Rollback
-        setCompletedIds((prev) => {
-          const next = new Set(prev);
-          if (nextCompleted) next.delete(id);
-          else next.add(id);
-          return next;
-        });
-        console.error("toggle failed", error);
-      }
-    },
-    []
-  );
+      console.error("toggle failed", error);
+    }
+  }, []);
 
   const total = STEPS.length;
   const completedCount = completedIds.size;
@@ -121,6 +113,13 @@ export default function HomePage() {
     return map;
   }, []);
 
+  const phaseStartIndex: Record<Phase, number> = {
+    A: 0,
+    B: byPhase.A.length,
+    C: byPhase.A.length + byPhase.B.length,
+    D: byPhase.A.length + byPhase.B.length + byPhase.C.length,
+  };
+
   return (
     <main className="mx-auto w-full max-w-3xl px-4 sm:px-6 pt-10 sm:pt-16 pb-12">
       {/* Hero */}
@@ -128,50 +127,60 @@ export default function HomePage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-10 sm:mb-14"
+        className="mb-16 sm:mb-20"
       >
-        <div className="mb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-blue bg-blue-light border border-blue-border px-2.5 py-1 rounded-full">
+        <div className="mb-3">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-blue bg-blue-light border border-blue-border px-2.5 py-1 rounded-full">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue animate-pulse" />
             Implementation Roadmap
           </span>
         </div>
-        <h1 className="text-3xl sm:text-4xl md:text-[2.75rem] font-semibold leading-[1.15] tracking-tight text-text-primary">
+        <h1 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] font-semibold leading-[1.1] tracking-[-0.02em] text-text-primary">
           Journey Realty Group
-          <span className="block text-text-secondary font-medium mt-1 text-2xl sm:text-3xl md:text-4xl">
-            AI Automation Project
-          </span>
         </h1>
-        <p className="mt-4 text-[15px] sm:text-base text-text-secondary leading-relaxed max-w-2xl">
-          Building an autonomous AI business operator for a NYC real estate company.
-          34 steps across 4 phases.
+        <div className="text-[1.5rem] sm:text-[1.75rem] md:text-[2rem] font-medium leading-[1.15] tracking-[-0.015em] text-text-secondary mt-1">
+          AI Automation Project
+        </div>
+        <p className="mt-5 text-[15px] sm:text-[17px] text-text-secondary leading-[1.6] max-w-2xl">
+          Building an autonomous AI business operator for a NYC real estate company. 34 steps
+          across 4 phases.
         </p>
 
         {/* Progress ring + phase summary */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6 md:gap-8 items-center">
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-[auto,1fr] gap-8 md:gap-10 items-center">
           <div className="flex justify-center md:justify-start">
-            <ProgressRing completed={completedCount} total={total} size={180} />
+            <ProgressRing completed={completedCount} total={total} size={200} />
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {(["A", "B", "C", "D"] as Phase[]).map((p) => {
               const meta = PHASES[p];
               const phaseSteps = byPhase[p];
               const done = phaseSteps.filter((s) => completedIds.has(s.id)).length;
-              const pct = phaseSteps.length > 0 ? (done / phaseSteps.length) * 100 : 0;
+              const denom = phaseSteps.length || (p === "D" ? 1 : 1);
+              const pct = phaseSteps.length > 0 ? (done / denom) * 100 : 0;
               return (
                 <div key={p}>
-                  <div className="flex items-center justify-between text-xs sm:text-sm mb-1.5">
-                    <span className="font-medium text-text-primary truncate pr-2">
-                      {meta.title}
-                    </span>
-                    <span className="text-text-secondary tabular-nums shrink-0">
-                      {done} of {phaseSteps.length || "—"}
+                  <div className="flex items-center justify-between text-[13px] sm:text-sm mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white shrink-0"
+                        style={{ backgroundColor: meta.accent }}
+                      >
+                        {p}
+                      </span>
+                      <span className="font-semibold text-text-primary truncate">
+                        {meta.short}
+                      </span>
+                    </div>
+                    <span className="text-text-secondary tabular-nums shrink-0 font-medium">
+                      {phaseSteps.length > 0 ? `${done} / ${phaseSteps.length}` : "Later"}
                     </span>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-surface-hover overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                       className="h-full rounded-full"
                       style={{ backgroundColor: meta.accent }}
                     />
@@ -183,16 +192,35 @@ export default function HomePage() {
         </div>
 
         {/* What's next */}
-        <div className="mt-8">
-          {loaded && <WhatsNext next={nextStep} />}
-        </div>
+        <div className="mt-10">{loaded && <WhatsNext next={nextStep} />}</div>
       </motion.header>
 
       {/* Phase sections */}
-      <div className="space-y-8 sm:space-y-10">
-        <PhaseSection phase="A" steps={byPhase.A} completedIds={completedIds} onToggle={toggle} />
-        <PhaseSection phase="B" steps={byPhase.B} completedIds={completedIds} onToggle={toggle} />
-        <PhaseSection phase="C" steps={byPhase.C} completedIds={completedIds} onToggle={toggle} />
+      <div className="space-y-20 sm:space-y-24">
+        <PhaseSection
+          phase="A"
+          steps={byPhase.A}
+          completedIds={completedIds}
+          currentStepId={nextStep?.id ?? null}
+          onToggle={toggle}
+          startIndex={phaseStartIndex.A}
+        />
+        <PhaseSection
+          phase="B"
+          steps={byPhase.B}
+          completedIds={completedIds}
+          currentStepId={nextStep?.id ?? null}
+          onToggle={toggle}
+          startIndex={phaseStartIndex.B}
+        />
+        <PhaseSection
+          phase="C"
+          steps={byPhase.C}
+          completedIds={completedIds}
+          currentStepId={nextStep?.id ?? null}
+          onToggle={toggle}
+          startIndex={phaseStartIndex.C}
+        />
         <PhaseDLocked />
       </div>
 
