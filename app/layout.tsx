@@ -1,0 +1,27 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Journey Realty Group — AI Automation Project",
+  description:
+    "Building an autonomous AI business operator for a NYC real estate company. Track the 34-step implementation roadmap.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans bg-bg text-text-primary antialiased">
+        {children}
+      </body>
+    </html>
+  );
+}
