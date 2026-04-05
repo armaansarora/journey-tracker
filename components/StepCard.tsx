@@ -38,10 +38,17 @@ export function StepCard({ step, index, completed, onToggle }: Props) {
         borderLeftColor: completed ? "#059669" : phase.accent,
       }}
     >
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setExpanded((v) => !v)}
-        className="w-full cursor-pointer text-left px-4 py-4 sm:px-5 flex items-center gap-3 sm:gap-4 hover:bg-surface-hover transition-colors"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setExpanded((v) => !v);
+          }
+        }}
+        className="w-full cursor-pointer text-left px-4 py-4 sm:px-5 flex items-center gap-3 sm:gap-4 hover:bg-surface-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue focus-visible:ring-inset"
         aria-expanded={expanded}
       >
         {/* Completion circle */}
@@ -52,6 +59,7 @@ export function StepCard({ step, index, completed, onToggle }: Props) {
           tabIndex={0}
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onToggle(step.id, !completed);
           }}
           onKeyDown={(e) => {
@@ -137,7 +145,7 @@ export function StepCard({ step, index, completed, onToggle }: Props) {
         >
           <polyline points="6 9 12 15 18 9" />
         </motion.svg>
-      </button>
+      </div>
 
       <AnimatePresence initial={false}>
         {expanded && (
