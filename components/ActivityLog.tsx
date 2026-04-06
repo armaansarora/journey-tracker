@@ -30,24 +30,18 @@ export function ActivityLog({ logs }: Props) {
   const visible = expanded ? sorted : sorted.slice(0, 3);
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-xl border border-border bg-white shadow-[0_1px_2px_rgba(17,24,39,0.04)]"
-    >
+    <section className="bg-white border border-[#E5E7EB] rounded-xl p-5">
       {/* Header */}
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-surface-hover/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue focus-visible:ring-inset rounded-xl"
+        className="w-full flex items-center justify-between cursor-pointer focus:outline-none"
         aria-expanded={expanded}
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-lg font-semibold text-text-primary">Activity Log</span>
+          <span className="text-lg font-semibold text-[#111827]">Activity Log</span>
           {sorted.length > 0 && (
-            <span className="text-xs font-semibold tabular-nums px-2 py-0.5 rounded-full bg-[#F1F5F9] text-text-secondary">
+            <span className="text-xs font-semibold tabular-nums px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#6B7280]">
               {sorted.length}
             </span>
           )}
@@ -71,13 +65,13 @@ export function ActivityLog({ logs }: Props) {
 
       {/* Content */}
       {sorted.length === 0 ? (
-        <div className="px-5 pb-5">
-          <p className="text-sm text-text-muted text-center py-4">
+        <div className="mt-4">
+          <p className="text-sm text-[#9CA3AF] text-center py-4">
             No activity yet. Mark a step complete to start tracking.
           </p>
         </div>
       ) : (
-        <div className="px-5 pb-4">
+        <div className="mt-4">
           <AnimatePresence initial={false} mode="sync">
             {visible.map((log) => (
               <motion.div
@@ -99,12 +93,12 @@ export function ActivityLog({ logs }: Props) {
                     }}
                   />
                   {/* Description */}
-                  <span className="flex-1 min-w-0 text-[13px] text-text-secondary truncate">
+                  <span className="flex-1 min-w-0 text-[13px] text-[#6B7280] truncate">
                     Step {stepNumber(log.step_id)} {log.action}:{" "}
                     &ldquo;{stepTitle(log.step_id)}&rdquo;
                   </span>
                   {/* Timestamp */}
-                  <span className="shrink-0 text-[13px] text-text-secondary tabular-nums">
+                  <span className="shrink-0 text-[13px] text-[#9CA3AF] tabular-nums">
                     {fmtDateTime(log.created_at)}
                   </span>
                 </div>
@@ -112,14 +106,13 @@ export function ActivityLog({ logs }: Props) {
             ))}
           </AnimatePresence>
 
-          {/* Show more / less toggle hint */}
           {sorted.length > 3 && !expanded && (
-            <p className="text-[13px] text-text-muted text-center pt-1">
+            <p className="text-[13px] text-[#9CA3AF] text-center pt-1">
               +{sorted.length - 3} more
             </p>
           )}
         </div>
       )}
-    </motion.section>
+    </section>
   );
 }

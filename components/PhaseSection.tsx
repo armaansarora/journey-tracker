@@ -31,28 +31,28 @@ export function PhaseSection({
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       id={`phase-${phase}`}
-      className="rounded-2xl p-5 sm:p-6 scroll-mt-16"
-      style={{ backgroundColor: meta.light + "55" }}
+      className="rounded-xl p-5 sm:p-6 scroll-mt-16"
+      style={{ backgroundColor: meta.light + "40" }}
     >
       {/* Phase header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 sm:gap-4 mb-4">
           <span
-            className="inline-flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-xl text-xl sm:text-2xl font-bold text-white shrink-0 shadow-sm"
-            style={{ backgroundColor: meta.accent, boxShadow: `0 4px 14px ${meta.accent}33` }}
+            className="inline-flex items-center justify-center h-12 w-12 rounded-xl text-xl font-bold text-white shrink-0"
+            style={{ backgroundColor: meta.accent }}
           >
             {phase}
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl sm:text-2xl font-semibold text-text-primary leading-tight tracking-tight">
+            <h2 className="text-xl font-semibold text-[#111827] leading-tight tracking-tight">
               {meta.title}
             </h2>
-            <div className="text-xs sm:text-sm text-text-muted mt-0.5 font-medium">
+            <div className="text-xs sm:text-sm text-[#9CA3AF] mt-0.5 font-medium">
               {meta.weeks} · {done} of {steps.length} complete
             </div>
           </div>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-bg/80 overflow-hidden">
+        <div className="h-1.5 w-full rounded-full bg-[#F1F5F9] overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             whileInView={{ width: `${pct}%` }}
