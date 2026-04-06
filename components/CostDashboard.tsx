@@ -20,15 +20,13 @@ type Props = {
   stepRows: Map<string, { completed_at: string | null }>;
 };
 
-const SERVICE_MAP: Record<string, string> = {
-  a1: "Google Workspace",
-  a8: "Hetzner VPS",
-  a11: "LLM APIs",
-  a13: "Domain",
-  a17: "Backblaze B2",
+const SERVICE_MAP: Record<string, { label: string; cost: number; color: string }> = {
+  a1:  { label: "Google Workspace", cost: 42,   color: "#2563EB" },
+  a8:  { label: "Hetzner VPS",      cost: 16,   color: "#059669" },
+  a11: { label: "LLM APIs",         cost: 15,   color: "#7C3AED" },
+  a13: { label: "Domain",           cost: 1,    color: "#0891B2" },
+  a17: { label: "Backblaze B2",     cost: 0.5,  color: "#D97706" },
 };
-
-const DONUT_COLORS = ["#2563EB", "#059669", "#7C3AED", "#0891B2", "#D97706"];
 
 export function CostDashboard({ completedIds, stepRows }: Props) {
   const completedSteps = useMemo(
@@ -87,26 +85,25 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
 
   const projectedYear1 = monthlyBurn * 12 + oneTimeTotal;
 
-  // Donut data — only completed services
+  const firstDateStr = firstCompletion
+    ? new Date(firstCompletion).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })
+    : "N/A";
+
+  /* ── Donut data ── */
   const donutServices = useMemo(() => {
     const services: { label: string; cost: number; color: string }[] = [];
-    const ids = Object.keys(SERVICE_MAP);
-    ids.forEach((id, i) => {
+    for (const [id, svc] of Object.entries(SERVICE_MAP)) {
       if (completedIds.has(id)) {
-        const step = STEPS.find((s) => s.id === id);
-        if (step) {
-          services.push({
-            label: SERVICE_MAP[id],
-            cost: step.monthly_cost,
-            color: DONUT_COLORS[i % DONUT_COLORS.length],
-          });
-        }
+        services.push({ label: svc.label, cost: svc.cost, color: svc.color });
       }
-    });
+    }
     return services;
   }, [completedIds]);
 
-  // Sparkline data — cumulative monthly cost over time
+  /* ── Sparkline data ── */
   const sparklineData = useMemo(() => {
     const costSteps = completedSteps
       .filter((s) => s.monthly_cost > 0)
@@ -122,7 +119,6 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
     const points: { date: string; cost: number }[] = [];
     let cumulative = 0;
 
-    // Start at $0
     points.push({
       date: new Date(costSteps[0].completed_at!).toLocaleDateString("en-US", {
         month: "short",
@@ -145,18 +141,12 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
     return points;
   }, [completedSteps, stepRows]);
 
-  const firstDateStr = firstCompletion
-    ? new Date(firstCompletion).toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      })
-    : "N/A";
-
+  /* ── KPI definitions ── */
   const kpis = [
     {
       label: "Monthly Burn",
       value: fmtCost(Math.round(monthlyBurn)),
-      sub: `${activeServiceCount} services active`,
+      sub: `${activeServiceCount} services`,
     },
     {
       label: "Total Spent",
@@ -169,91 +159,99 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
       sub: `${purchaseCount} purchases`,
     },
     {
-      label: "Projected Year 1",
+      label: "Year 1 Projected",
       value: fmtCost(Math.round(projectedYear1)),
-      sub: "At current burn",
+      sub: "At current rate",
     },
   ];
 
+  /* ── Empty state ── */
+  if (completedSteps.length === 0) {
+    return (
+      <p className="text-sm text-[#9CA3AF] text-center py-10">
+        No active services yet.
+      </p>
+    );
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
       className="space-y-8"
     >
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* ── KPI Cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
-          <div key={kpi.label} className="bg-[#F9FAFB] rounded-xl p-4">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
+          <div
+            key={kpi.label}
+            className="bg-white border border-[#E5E7EB] rounded-xl p-5"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9CA3AF] mb-2">
               {kpi.label}
-            </div>
-            <div className="text-2xl font-semibold text-[#111827] tabular-nums mt-1">
+            </p>
+            <p className="text-[28px] font-semibold text-[#111827] tabular-nums leading-none">
               {kpi.value}
-            </div>
-            <div className="text-[12px] text-[#6B7280] mt-0.5">{kpi.sub}</div>
+            </p>
+            <p className="text-[12px] text-[#6B7280] mt-1.5">{kpi.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Donut Chart */}
-      <div className="flex flex-col items-center gap-4">
-        {donutServices.length > 0 ? (
-          <>
-            <PieChart width={200} height={200}>
-              <Pie
-                data={donutServices}
-                dataKey="cost"
-                nameKey="label"
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                strokeWidth={0}
-              >
-                {donutServices.map((svc, i) => (
-                  <Cell key={svc.label} fill={svc.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                formatter={(value: any) => [`${fmtCost(Number(value))}/mo`, ""]}
-              />
-            </PieChart>
-            {/* Custom Legend */}
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+      {/* ── Donut Chart ── */}
+      {donutServices.length > 0 && (
+        <div className="flex flex-col items-center gap-4">
+          <PieChart width={180} height={180}>
+            <Pie
+              data={donutServices}
+              dataKey="cost"
+              nameKey="label"
+              cx="50%"
+              cy="50%"
+              innerRadius={55}
+              outerRadius={80}
+              strokeWidth={0}
+            >
               {donutServices.map((svc) => (
-                <div key={svc.label} className="flex items-center gap-1.5">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: svc.color }}
-                  />
-                  <span className="text-sm text-[#6B7280]">{svc.label}</span>
-                  <span className="text-sm font-medium text-[#111827]">
-                    {fmtCost(svc.cost)}
-                  </span>
-                </div>
+                <Cell key={svc.label} fill={svc.color} />
               ))}
-            </div>
-          </>
-        ) : (
-          <p className="text-sm text-[#9CA3AF] text-center py-8">
-            No active services yet. Costs begin when you complete infrastructure
-            steps.
-          </p>
-        )}
-      </div>
+            </Pie>
+            <Tooltip
+              formatter={(value: any) => [`${fmtCost(Number(value))}/mo`, ""]}
+            />
+          </PieChart>
 
-      {/* Cost Timeline Sparkline */}
+          {/* Custom Legend */}
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+            {donutServices.map((svc) => (
+              <div
+                key={svc.label}
+                className="flex items-center gap-2 text-[13px]"
+              >
+                <span
+                  className="w-[10px] h-[10px] rounded-full shrink-0"
+                  style={{ backgroundColor: svc.color }}
+                />
+                <span className="text-[#6B7280]">{svc.label}</span>
+                <span className="font-medium text-[#111827]">
+                  {fmtCost(svc.cost)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Area Sparkline ── */}
       {sparklineData && (
-        <ResponsiveContainer width="100%" height={120}>
+        <ResponsiveContainer width="100%" height={100}>
           <AreaChart data={sparklineData}>
             <defs>
               <linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2563EB" stopOpacity={0.15} />
-                <stop offset="100%" stopColor="#2563EB" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="#2563EB" stopOpacity={0.1} />
+                <stop offset="100%" stopColor="#2563EB" stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <XAxis
@@ -263,13 +261,13 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
               tickLine={false}
             />
             <Tooltip
-              formatter={(value: any) => [`${fmtCost(Number(value))}/mo`, "Rate"]}
+              formatter={(value: any) => [fmtCost(Number(value)), "Rate"]}
             />
             <Area
               type="monotone"
               dataKey="cost"
               stroke="#2563EB"
-              strokeWidth={2}
+              strokeWidth={1.5}
               fill="url(#costFill)"
               dot={false}
             />
