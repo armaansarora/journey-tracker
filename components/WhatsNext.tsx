@@ -58,7 +58,7 @@ export function WhatsNext({ next, prevCompletedAt }: Props) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-      className="relative block cursor-pointer rounded-xl border-2 border-blue-border bg-gradient-to-br from-blue-light to-white p-5 shadow-[0_1px_2px_rgba(37,99,235,0.08)] hover:shadow-[0_8px_24px_rgba(37,99,235,0.12)] hover:border-blue transition-all"
+      className="relative block cursor-pointer rounded-xl border-2 border-blue-border bg-gradient-to-br from-blue-light to-bg p-5 shadow-[0_1px_2px_rgba(37,99,235,0.08)] hover:shadow-[0_8px_24px_rgba(37,99,235,0.12)] hover:border-blue transition-all"
     >
       <div className="flex items-start justify-between mb-2.5 gap-3">
         <div className="flex items-center gap-2 min-w-0">

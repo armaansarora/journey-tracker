@@ -1,7 +1,25 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useState, useCallback } from "react";
 import type { Block } from "@/lib/steps";
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = useCallback(() => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [text]);
+  return (
+    <button
+      onClick={copy}
+      className="absolute top-2 right-2 opacity-0 group-hover/code:opacity-100 transition-opacity text-[11px] font-medium px-2 py-1 rounded-md bg-bg border border-border text-text-muted hover:text-text-primary cursor-pointer"
+    >
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
 
 // Parse inline `code` and **bold** into ReactNodes
 function renderInline(text: string): ReactNode {
@@ -17,7 +35,7 @@ function renderInline(text: string): ReactNode {
       parts.push(
         <code
           key={i++}
-          className="font-mono text-[0.86em] bg-[#F3F4F6] text-[#0F172A] px-[6px] py-[2px] rounded-[4px] border border-[#E5E7EB] whitespace-nowrap"
+          className="font-mono text-[0.86em] bg-surface-hover text-text-primary px-[6px] py-[2px] rounded-[4px] border border-border whitespace-nowrap"
         >
           {tok.slice(1, -1)}
         </code>
@@ -91,12 +109,12 @@ export function StepBlocks({ blocks }: { blocks: Block[] }) {
 
         if (block.type === "code") {
           return (
-            <pre
-              key={idx}
-              className="font-mono text-[12.5px] leading-[1.6] text-[#0F172A] bg-[#F3F4F6] px-4 py-3 rounded-lg border-l-[3px] border-l-blue border-y border-r border-y-border border-r-border overflow-x-auto whitespace-pre ml-[34px]"
-            >
-              {block.text}
-            </pre>
+            <div key={idx} className="relative group/code ml-[34px]">
+              <pre className="font-mono text-[12.5px] leading-[1.6] text-text-primary bg-surface-hover px-4 py-3 rounded-lg border-l-[3px] border-l-blue border-y border-r border-y-border border-r-border overflow-x-auto whitespace-pre">
+                {block.text}
+              </pre>
+              <CopyButton text={block.text} />
+            </div>
           );
         }
 

@@ -5,15 +5,12 @@ import { motion } from "framer-motion";
 import { STEPS } from "@/lib/steps";
 import { fmtDuration, fmtDate } from "@/lib/utils";
 import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
+  BarChart,
+  Bar,
+  XAxis,
   Tooltip,
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
-
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
+  ResponsiveContainer,
+} from "recharts";
 
 type Props = {
   completedIds: Set<string>;
@@ -24,7 +21,7 @@ const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 function getCompletionDates(
   completedIds: Set<string>,
-  stepRows: Map<string, { completed_at: string | null }>
+  stepRows: Map<string, { completed_at: string | null }>,
 ): Date[] {
   const dates: Date[] = [];
   for (const id of completedIds) {
@@ -38,10 +35,6 @@ function getCompletionDates(
 
 function weeksBetween(from: Date, to: Date): number {
   return Math.max((to.getTime() - from.getTime()) / MS_PER_WEEK, 1 / 7);
-}
-
-function weekLabel(weekIndex: number): string {
-  return `W${weekIndex + 1}`;
 }
 
 export function VelocityTracker({ completedIds, stepRows }: Props) {
@@ -61,7 +54,7 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
     // Count completions in last 7 days
     const sevenDaysAgo = new Date(now.getTime() - MS_PER_WEEK);
     const recentCount = dates.filter((d) => d >= sevenDaysAgo).length;
-    const recentRate = recentCount; // per week (last 7 days = 1 week)
+    const recentRate = recentCount;
     const trendUp = recentRate > stepsPerWeek;
 
     // Average gap between consecutive completions
@@ -69,7 +62,8 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
     for (let i = 1; i < dates.length; i++) {
       gaps.push(dates[i].getTime() - dates[i - 1].getTime());
     }
-    const avgGap = gaps.length > 0 ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
+    const avgGap =
+      gaps.length > 0 ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
     const lastGap = gaps.length > 0 ? gaps[gaps.length - 1] : 0;
     const gettingFaster = gaps.length > 0 && lastGap < avgGap;
 
@@ -78,15 +72,19 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
     const weeksNeeded = stepsPerWeek > 0 ? remaining / stepsPerWeek : Infinity;
     const estDate = new Date(now.getTime() + weeksNeeded * MS_PER_WEEK);
 
-    // Weekly buckets for sparkline
+    // Weekly buckets for bar chart
     const totalWeeks = Math.max(1, Math.ceil(weeksBetween(first, now)));
-    const buckets: number[] = new Array(totalWeeks).fill(0);
+    const buckets: { week: string; count: number }[] = [];
+    const raw = new Array(totalWeeks).fill(0);
     for (const d of dates) {
       const weekIdx = Math.min(
         Math.floor((d.getTime() - first.getTime()) / MS_PER_WEEK),
-        totalWeeks - 1
+        totalWeeks - 1,
       );
-      buckets[weekIdx]++;
+      raw[weekIdx]++;
+    }
+    for (let i = 0; i < totalWeeks; i++) {
+      buckets.push({ week: `W${i + 1}`, count: raw[i] });
     }
 
     return {
@@ -126,38 +124,6 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
     buckets,
   } = metrics;
 
-  const chartData = {
-    labels: buckets.map((_, i) => weekLabel(i)),
-    datasets: [
-      {
-        data: buckets,
-        backgroundColor: "#2563EB",
-        borderRadius: 4,
-        borderSkipped: false as const,
-      },
-    ],
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      tooltip: { enabled: true },
-      legend: { display: false },
-    },
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: { font: { size: 10 }, color: "#94a3b8" },
-        border: { display: false },
-      },
-      y: {
-        display: false,
-        beginAtZero: true,
-      },
-    },
-  } as const;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -175,9 +141,9 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
           </p>
           <p className="text-xs mt-1">
             {trendUp ? (
-              <span className="text-green-500">↑ trending faster</span>
+              <span className="text-green-500">&#8593; trending faster</span>
             ) : (
-              <span className="text-amber-500">↓ trending slower</span>
+              <span className="text-amber-500">&#8595; trending slower</span>
             )}
           </p>
         </div>
@@ -190,9 +156,9 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
           </p>
           <p className="text-xs mt-1">
             {gettingFaster ? (
-              <span className="text-green-500">↓ getting faster</span>
+              <span className="text-green-500">&#8595; getting faster</span>
             ) : (
-              <span className="text-amber-500">↑ getting slower</span>
+              <span className="text-amber-500">&#8593; getting slower</span>
             )}
           </p>
         </div>
@@ -213,11 +179,26 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
         </div>
       </div>
 
-      {/* Velocity Sparkline */}
+      {/* Velocity Bar Chart */}
       <div className="rounded-xl bg-surface p-4">
-        <div style={{ height: 80 }}>
-          <Bar data={chartData} options={chartOptions} />
-        </div>
+        <ResponsiveContainer width="100%" height={80}>
+          <BarChart data={buckets}>
+            <XAxis
+              dataKey="week"
+              tick={{ fontSize: 10, fill: "#94a3b8" }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              formatter={(value: any) => [`${Number(value)} steps`, "Completed"]}
+            />
+            <Bar
+              dataKey="count"
+              fill="#2563EB"
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </motion.div>
   );

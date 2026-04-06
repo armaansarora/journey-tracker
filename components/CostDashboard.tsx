@@ -4,27 +4,16 @@ import { useMemo } from "react";
 import { monthsBetween, fmtCost } from "@/lib/utils";
 import { STEPS } from "@/lib/steps";
 import {
-  Chart as ChartJS,
-  ArcElement,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
+  XAxis,
   Tooltip,
-  Filler,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-} from "chart.js";
-import { Doughnut, Line } from "react-chartjs-2";
+  ResponsiveContainer,
+} from "recharts";
 import { motion } from "framer-motion";
-
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Filler,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-);
 
 type Props = {
   completedIds: Set<string>;
@@ -117,21 +106,6 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
     return services;
   }, [completedIds]);
 
-  const donutData = useMemo(
-    () => ({
-      labels: donutServices.map((s) => s.label),
-      datasets: [
-        {
-          data: donutServices.map((s) => s.cost),
-          backgroundColor: donutServices.map((s) => s.color),
-          borderWidth: 0,
-          cutout: "70%",
-        },
-      ],
-    }),
-    [donutServices],
-  );
-
   // Sparkline data — cumulative monthly cost over time
   const sparklineData = useMemo(() => {
     const costSteps = completedSteps
@@ -145,44 +119,30 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
 
     if (costSteps.length === 0) return null;
 
-    const labels: string[] = [];
-    const values: number[] = [];
+    const points: { date: string; cost: number }[] = [];
     let cumulative = 0;
 
     // Start at $0
-    labels.push(
-      new Date(costSteps[0].completed_at!).toLocaleDateString("en-US", {
+    points.push({
+      date: new Date(costSteps[0].completed_at!).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       }),
-    );
-    values.push(0);
+      cost: 0,
+    });
 
     for (const step of costSteps) {
       cumulative += step.monthly_cost;
-      labels.push(
-        new Date(step.completed_at!).toLocaleDateString("en-US", {
+      points.push({
+        date: new Date(step.completed_at!).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
         }),
-      );
-      values.push(cumulative);
+        cost: cumulative,
+      });
     }
 
-    return {
-      labels,
-      datasets: [
-        {
-          data: values,
-          borderColor: "#2563EB",
-          backgroundColor: "rgba(37, 99, 235, 0.08)",
-          fill: true,
-          tension: 0.3,
-          pointRadius: 0,
-          borderWidth: 2,
-        },
-      ],
-    };
+    return points;
   }, [completedSteps, stepRows]);
 
   const firstDateStr = firstCompletion
@@ -226,19 +186,14 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {kpis.map((kpi) => (
-          <div
-            key={kpi.label}
-            className="bg-[#F9FAFB] rounded-xl p-4"
-          >
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+          <div key={kpi.label} className="bg-[#F9FAFB] rounded-xl p-4">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
               {kpi.label}
             </div>
-            <div className="text-2xl font-semibold text-text-primary tabular-nums mt-1">
+            <div className="text-2xl font-semibold text-[#111827] tabular-nums mt-1">
               {kpi.value}
             </div>
-            <div className="text-[12px] text-text-secondary mt-0.5">
-              {kpi.sub}
-            </div>
+            <div className="text-[12px] text-[#6B7280] mt-0.5">{kpi.sub}</div>
           </div>
         ))}
       </div>
@@ -247,23 +202,26 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
       <div className="flex flex-col items-center gap-4">
         {donutServices.length > 0 ? (
           <>
-            <div className="w-[200px] h-[200px]">
-              <Doughnut
-                data={donutData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: true,
-                  plugins: {
-                    tooltip: {
-                      callbacks: {
-                        label: (ctx) =>
-                          `${ctx.label}: ${fmtCost(ctx.parsed)}/mo`,
-                      },
-                    },
-                  },
-                }}
+            <PieChart width={200} height={200}>
+              <Pie
+                data={donutServices}
+                dataKey="cost"
+                nameKey="label"
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={90}
+                strokeWidth={0}
+              >
+                {donutServices.map((svc, i) => (
+                  <Cell key={svc.label} fill={svc.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter={(value: any) => [`${fmtCost(Number(value))}/mo`, ""]}
               />
-            </div>
+            </PieChart>
             {/* Custom Legend */}
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
               {donutServices.map((svc) => (
@@ -272,10 +230,8 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
                     className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: svc.color }}
                   />
-                  <span className="text-sm text-text-secondary">
-                    {svc.label}
-                  </span>
-                  <span className="text-sm font-medium text-text-primary">
+                  <span className="text-sm text-[#6B7280]">{svc.label}</span>
+                  <span className="text-sm font-medium text-[#111827]">
                     {fmtCost(svc.cost)}
                   </span>
                 </div>
@@ -283,7 +239,7 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
             </div>
           </>
         ) : (
-          <p className="text-sm text-text-muted text-center py-8">
+          <p className="text-sm text-[#9CA3AF] text-center py-8">
             No active services yet. Costs begin when you complete infrastructure
             steps.
           </p>
@@ -292,37 +248,33 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
 
       {/* Cost Timeline Sparkline */}
       {sparklineData && (
-        <div className="h-[120px]">
-          <Line
-            data={sparklineData}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                x: {
-                  grid: { color: "rgba(0,0,0,0.04)" },
-                  ticks: { font: { size: 10 }, color: "#9CA3AF" },
-                },
-                y: {
-                  grid: { color: "rgba(0,0,0,0.04)" },
-                  ticks: {
-                    font: { size: 10 },
-                    color: "#9CA3AF",
-                    callback: (v) => `$${v}`,
-                  },
-                  beginAtZero: true,
-                },
-              },
-              plugins: {
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) => `${fmtCost(ctx.parsed?.y ?? 0)}/mo`,
-                  },
-                },
-              },
-            }}
-          />
-        </div>
+        <ResponsiveContainer width="100%" height={120}>
+          <AreaChart data={sparklineData}>
+            <defs>
+              <linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2563EB" stopOpacity={0.15} />
+                <stop offset="100%" stopColor="#2563EB" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 10, fill: "#9CA3AF" }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              formatter={(value: any) => [`${fmtCost(Number(value))}/mo`, "Rate"]}
+            />
+            <Area
+              type="monotone"
+              dataKey="cost"
+              stroke="#2563EB"
+              strokeWidth={2}
+              fill="url(#costFill)"
+              dot={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       )}
     </motion.div>
   );

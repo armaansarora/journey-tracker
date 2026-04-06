@@ -30,7 +30,8 @@ export function PhaseSection({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-2xl p-5 sm:p-6"
+      id={`phase-${phase}`}
+      className="rounded-2xl p-5 sm:p-6 scroll-mt-16"
       style={{ backgroundColor: meta.light + "55" }}
     >
       {/* Phase header */}
@@ -51,7 +52,7 @@ export function PhaseSection({
             </div>
           </div>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-white/80 overflow-hidden">
+        <div className="h-1.5 w-full rounded-full bg-bg/80 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             whileInView={{ width: `${pct}%` }}

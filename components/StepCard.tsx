@@ -62,12 +62,14 @@ export function StepCard({
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.025, 0.25), ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -2 }}
-      className={`group relative overflow-hidden rounded-xl border bg-white transition-[border-color,box-shadow,background-color] duration-200 ${
+      className={`group relative overflow-hidden rounded-xl border bg-bg transition-[border-color,box-shadow,background-color,opacity,filter] duration-200 ${
         completed
           ? "border-green-border shadow-[0_1px_2px_rgba(5,150,105,0.06)]"
+          : isBlocked
+          ? "border-border opacity-55 grayscale-[0.3]"
           : "border-border shadow-[0_1px_2px_rgba(17,24,39,0.04)] hover:border-[#CBD5E1] hover:shadow-[0_4px_12px_rgba(17,24,39,0.06)]"
       }`}
-      style={{ backgroundColor: completed ? "#F6FDF9" : "#FFFFFF" }}
+      style={{ backgroundColor: completed ? "#F6FDF9" : undefined }}
     >
       {/* Left border accent */}
       <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: leftBorderColor }} />
@@ -114,8 +116,8 @@ export function StepCard({
                 : isBlocked
                 ? { scale: 1, backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }
                 : isCurrent
-                ? { scale: 1, backgroundColor: "#FFFFFF", borderColor: phase.accent }
-                : { scale: 1, backgroundColor: "#FFFFFF", borderColor: "#D1D5DB" }
+                ? { scale: 1, backgroundColor: "var(--bg)", borderColor: phase.accent }
+                : { scale: 1, backgroundColor: "var(--bg)", borderColor: "#D1D5DB" }
             }
             transition={{ duration: 0.4, ease: [0.22, 1.2, 0.36, 1] }}
             className="h-10 w-10 rounded-full border-2 flex items-center justify-center"
