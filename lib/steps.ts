@@ -30,7 +30,7 @@ const list = (items: string[], label?: string): Block => ({ type: "list", items,
 const code = (text: string): Block => ({ type: "code", text });
 
 export const PHASES: Record<Phase, { title: string; short: string; weeks: string; accent: string; light: string; border: string }> = {
-  A: { title: "Phase A — Foundation", short: "Foundation", weeks: "Weeks 1–4", accent: "#0369A1", light: "#F0F9FF", border: "#BAE6FD" },
+  A: { title: "Phase A — Foundation", short: "Foundation", weeks: "Weeks 1–4", accent: "#2563EB", light: "#EFF6FF", border: "#DBEAFE" },
   B: { title: "Phase B — Build Agents", short: "Build Agents", weeks: "Weeks 5–13", accent: "#D97706", light: "#FFFBEB", border: "#FDE68A" },
   C: { title: "Phase C — Dashboard", short: "Dashboard", weeks: "Weeks 11–20", accent: "#059669", light: "#ECFDF5", border: "#A7F3D0" },
   D: { title: "Phase D — WhatsApp", short: "WhatsApp", weeks: "Later", accent: "#6B7280", light: "#F9FAFB", border: "#E5E7EB" },

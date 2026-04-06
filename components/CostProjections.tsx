@@ -17,11 +17,28 @@ type Props = { currentMonthlyBurn: number };
 
 const SCENARIOS = [
   { id: "wati", label: "WhatsApp via WATI", monthly: 129, note: "Phase D" },
-  { id: "respondio", label: "Respond.io", monthly: 159, note: "Phase D alt" },
+  {
+    id: "respondio",
+    label: "Respond.io (alternative)",
+    monthly: 159,
+    note: "Phase D alternative",
+  },
   { id: "retell", label: "Retell Voice AI", monthly: 50, note: "Future" },
+  {
+    id: "composio",
+    label: "Composio integrations",
+    monthly: 29,
+    note: "If CLI tools aren't enough",
+  },
+  {
+    id: "gotohuman",
+    label: "gotoHuman approvals",
+    monthly: 39,
+    note: "Cut from plan",
+  },
 ];
 
-const BAR_COLORS = ["#0F766E", "#D97706"];
+const BAR_COLORS = ["#2563EB", "#D97706"];
 
 export function CostProjections({ currentMonthlyBurn }: Props) {
   const [open, setOpen] = useState(false);
@@ -44,16 +61,16 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
 
   const chartData = [
     { name: "Current", value: currentMonthlyBurn },
-    { name: "Projected", value: projectedMonthly },
+    { name: "With additions", value: projectedMonthly },
   ];
 
   return (
-    <section className="bg-white border border-border rounded-card p-card">
+    <section className="rounded-2xl border border-border bg-[#F9FAFB] p-5">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between text-left cursor-pointer"
       >
-        <h2 className="text-lg font-semibold text-t-primary">
+        <h2 className="text-lg font-semibold text-[#111827]">
           Cost Projections
         </h2>
         <motion.svg
@@ -63,7 +80,7 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#94A3B8"
+          stroke="#9CA3AF"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -91,15 +108,15 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
                     className="flex items-center justify-between py-1"
                   >
                     <div className="min-w-0">
-                      <span className="text-sm font-medium text-t-primary">
+                      <span className="text-sm font-medium text-[#111827]">
                         {s.label}
                       </span>
-                      <span className="text-xs text-t-muted ml-1.5">
+                      <span className="text-xs text-[#9CA3AF] ml-1.5">
                         ({s.note})
                       </span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-sm font-semibold text-warn">
+                      <span className="text-sm font-semibold text-[#B45309]">
                         {fmtCost(s.monthly)}/mo
                       </span>
                       <button
@@ -107,10 +124,10 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
                         role="switch"
                         aria-checked={isOn}
                         onClick={() => toggle(s.id)}
-                        className={`relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors ${isOn ? "bg-primary" : "bg-[#D1D5DB]"}`}
+                        className={`relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors ${isOn ? "bg-blue-600" : "bg-[#D1D5DB]"}`}
                       >
                         <span
-                          className={`pointer-events-none inline-block h-[18px] w-[18px] translate-y-[2px] rounded-full bg-white transition-transform ${isOn ? "translate-x-[20px]" : "translate-x-[2px]"}`}
+                          className={`pointer-events-none inline-block h-[18px] w-[18px] translate-y-[2px] rounded-full bg-white shadow transition-transform ${isOn ? "translate-x-[20px]" : "translate-x-[2px]"}`}
                         />
                       </button>
                     </div>
@@ -120,19 +137,19 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
 
               <div className="mt-4 space-y-1.5 border-t border-border pt-4 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-t-secondary">Projected monthly</span>
-                  <span className="font-bold text-t-primary tabular-nums">
+                  <span className="text-[#6B7280]">Projected monthly</span>
+                  <span className="font-bold text-[#111827] tabular-nums">
                     {fmtCost(projectedMonthly)}
                     {additionsTotal > 0 && (
-                      <span className="ml-2 text-warn font-semibold">
+                      <span className="ml-2 text-[#B45309] font-semibold">
                         +{fmtCost(additionsTotal)}/mo
                       </span>
                     )}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-t-secondary">Projected year 1</span>
-                  <span className="font-bold text-t-primary tabular-nums">
+                  <span className="text-[#6B7280]">Projected year 1</span>
+                  <span className="font-bold text-[#111827] tabular-nums">
                     {fmtCost(projectedYearly)}
                   </span>
                 </div>
@@ -143,7 +160,7 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
                   <BarChart data={chartData} layout="vertical">
                     <XAxis
                       type="number"
-                      tick={{ fontSize: 10, fill: "#94A3B8" }}
+                      tick={{ fontSize: 10, fill: "#9CA3AF" }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(v: number) => fmtCost(v)}
@@ -151,7 +168,7 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
                     <YAxis
                       type="category"
                       dataKey="name"
-                      tick={{ fontSize: 12, fill: "#475569", fontWeight: 600 }}
+                      tick={{ fontSize: 12, fill: "#6B7280", fontWeight: 600 }}
                       axisLine={false}
                       tickLine={false}
                       width={100}

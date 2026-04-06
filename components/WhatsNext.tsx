@@ -1,138 +1,97 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type Step, PHASES } from "@/lib/steps";
+import { motion } from "framer-motion";
+import { Step, PHASES } from "@/lib/steps";
 import { fmtDuration } from "@/lib/utils";
 
 type Props = {
   next: Step | null;
-  prevCompletedAt: string | null;
+  prevCompletedAt: string | null; // completed_at of the step right before `next`
 };
 
-export default function WhatsNext({ next, prevCompletedAt }: Props) {
+export function WhatsNext({ next, prevCompletedAt }: Props) {
   const [elapsed, setElapsed] = useState("");
 
   useEffect(() => {
-    if (!prevCompletedAt) {
-      setElapsed("");
-      return;
-    }
-
+    if (!prevCompletedAt) { setElapsed(""); return; }
     function tick() {
       const ms = Date.now() - new Date(prevCompletedAt!).getTime();
       setElapsed(fmtDuration(ms));
     }
-
     tick();
     const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
   }, [prevCompletedAt]);
 
-  /* ---- All-done state ---- */
   if (!next) {
     return (
-      <div className="rounded-card border border-success-border bg-success-light p-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success text-white">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={20}
-            height={20}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl border border-green-border bg-green-light p-5 flex items-center gap-4"
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-green text-white shrink-0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
         <div>
-          <p className="text-sm font-semibold text-success">
-            All steps complete
-          </p>
-          <p className="text-xs text-t-secondary mt-0.5">
-            Every phase has been finished. Nice work.
-          </p>
+          <div className="text-sm font-semibold text-green">All 34 steps complete</div>
+          <div className="text-sm text-[#065F46]">The roadmap is done. Nice work.</div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   const phase = PHASES[next.phase];
-
-  /* Preview text from first 2 blocks */
   const preview = next.blocks
+    .filter((b) => b.type === "step")
     .slice(0, 2)
-    .map((b) => {
-      if ("text" in b) return b.text.replace(/\*\*/g, "");
-      if ("items" in b) return b.items.join(", ");
-      return "";
-    })
-    .filter(Boolean)
+    .map((b) => (b as { type: "step"; text: string }).text.replace(/\*\*/g, "").replace(/`/g, ""))
     .join(" ");
 
   return (
-    <div className="bg-white border-2 border-primary-light rounded-card p-5 hover:border-primary transition-colors duration-200">
-      {/* Label row */}
-      <div className="flex items-center gap-2 mb-3">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-        </span>
+    <motion.a
+      href={`#step-${next.id}`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      className="relative block cursor-pointer rounded-xl border-2 border-blue-border bg-gradient-to-br from-blue-light to-bg p-5 shadow-[0_1px_2px_rgba(37,99,235,0.08)] hover:shadow-[0_8px_24px_rgba(37,99,235,0.12)] hover:border-blue transition-all"
+    >
+      <div className="flex items-start justify-between mb-2.5 gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="inline-flex h-1.5 w-1.5 rounded-full bg-blue animate-pulse" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-blue">
+            Up next
+          </span>
+        </div>
         <span
-          className="font-medium uppercase tracking-[0.06em] text-primary"
-          style={{ fontSize: 11 }}
+          className="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+          style={{ color: phase.accent, backgroundColor: phase.light, border: `1px solid ${phase.border}` }}
         >
-          Up next
+          {phase.short} · {next.week}
         </span>
       </div>
-
-      {/* Phase + week badge */}
-      <span
-        className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium mb-2"
-        style={{
-          backgroundColor: `${phase.accent}26`,
-          color: phase.accent,
-        }}
-      >
-        {next.phase} &middot; {next.week}
-      </span>
-
-      {/* Title */}
-      <h3
-        className="font-semibold text-t-primary mb-1"
-        style={{ fontSize: 17 }}
-      >
+      <div className="text-[17px] sm:text-lg font-semibold text-text-primary mb-1 leading-snug">
         {next.title}
-      </h3>
-
-      {/* Time in step */}
-      {prevCompletedAt && elapsed && (
-        <p className="text-t-muted mb-2" style={{ fontSize: 12 }}>
-          In this step for {elapsed}
-        </p>
+      </div>
+      {elapsed && (
+        <div className="text-[12px] text-text-muted font-medium mb-1.5">
+          In progress for {elapsed}
+        </div>
       )}
-
-      {/* Preview */}
-      {preview && (
-        <p
-          className="text-t-secondary line-clamp-2 mb-3"
-          style={{ fontSize: 14 }}
-        >
-          {preview}
-        </p>
-      )}
-
-      {/* Jump link */}
-      <a
-        href={`#step-${next.id}`}
-        className="text-primary font-semibold inline-flex items-center gap-1 hover:underline"
-        style={{ fontSize: 13 }}
-      >
+      <div className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
+        {preview}
+      </div>
+      <div className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue">
         Jump to step
-        <span aria-hidden="true">&rarr;</span>
-      </a>
-    </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </div>
+    </motion.a>
   );
 }

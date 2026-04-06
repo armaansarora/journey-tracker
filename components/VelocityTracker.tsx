@@ -48,12 +48,16 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
     const first = dates[0];
     const weeksElapsed = weeksBetween(first, now);
 
+    // Steps per week
     const stepsPerWeek = completedCount / weeksElapsed;
 
+    // Count completions in last 7 days
     const sevenDaysAgo = new Date(now.getTime() - MS_PER_WEEK);
     const recentCount = dates.filter((d) => d >= sevenDaysAgo).length;
-    const trendUp = recentCount > stepsPerWeek;
+    const recentRate = recentCount;
+    const trendUp = recentRate > stepsPerWeek;
 
+    // Average gap between consecutive completions
     const gaps: number[] = [];
     for (let i = 1; i < dates.length; i++) {
       gaps.push(dates[i].getTime() - dates[i - 1].getTime());
@@ -63,10 +67,12 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
     const lastGap = gaps.length > 0 ? gaps[gaps.length - 1] : 0;
     const gettingFaster = gaps.length > 0 && lastGap < avgGap;
 
-    const remaining = STEPS.length - completedCount;
+    // Estimated completion
+    const remaining = 34 - completedCount;
     const weeksNeeded = stepsPerWeek > 0 ? remaining / stepsPerWeek : Infinity;
     const estDate = new Date(now.getTime() + weeksNeeded * MS_PER_WEEK);
 
+    // Weekly buckets for bar chart
     const totalWeeks = Math.max(1, Math.ceil(weeksBetween(first, now)));
     const buckets: { week: string; count: number }[] = [];
     const raw = new Array(totalWeeks).fill(0);
@@ -98,9 +104,9 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-border rounded-card p-card text-center"
+        className="rounded-xl bg-surface p-6 text-center"
       >
-        <p className="text-sm text-t-muted">
+        <p className="text-sm text-text-muted">
           Start a step to see projections
         </p>
       </motion.div>
@@ -126,52 +132,46 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
       className="space-y-4"
     >
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Steps / Week */}
-        <div className="bg-white border border-border rounded-card p-card">
-          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-t-muted">
-            Steps / Week
-          </p>
-          <p className="text-[28px] font-semibold text-t-primary tabular-nums leading-none mt-1">
+        <div className="rounded-xl bg-surface p-4">
+          <p className="text-xs text-text-muted mb-1">Steps / Week</p>
+          <p className="text-2xl font-semibold tabular-nums">
             {stepsPerWeek.toFixed(1)}
           </p>
-          <p className="text-[12px] text-t-secondary mt-1.5">
+          <p className="text-xs mt-1">
             {trendUp ? (
-              <span className="text-success">&#8593; trending faster</span>
+              <span className="text-green-500">&#8593; trending faster</span>
             ) : (
-              <span className="text-warn">&#8595; trending slower</span>
+              <span className="text-amber-500">&#8595; trending slower</span>
             )}
           </p>
         </div>
 
         {/* Avg Time / Step */}
-        <div className="bg-white border border-border rounded-card p-card">
-          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-t-muted">
-            Avg Time / Step
-          </p>
-          <p className="text-[28px] font-semibold text-t-primary tabular-nums leading-none mt-1">
+        <div className="rounded-xl bg-surface p-4">
+          <p className="text-xs text-text-muted mb-1">Avg Time / Step</p>
+          <p className="text-2xl font-semibold tabular-nums">
             {avgGap > 0 ? fmtDuration(avgGap) : "--"}
           </p>
-          <p className="text-[12px] text-t-secondary mt-1.5">
+          <p className="text-xs mt-1">
             {gettingFaster ? (
-              <span className="text-success">&#8595; getting faster</span>
+              <span className="text-green-500">&#8595; getting faster</span>
             ) : (
-              <span className="text-warn">&#8593; getting slower</span>
+              <span className="text-amber-500">&#8593; getting slower</span>
             )}
           </p>
         </div>
 
         {/* Est. Completion */}
-        <div className="bg-white border border-border rounded-card p-card">
-          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-t-muted">
-            Est. Completion
-          </p>
-          <p className="text-[28px] font-semibold text-t-primary tabular-nums leading-none mt-1">
+        <div className="rounded-xl bg-surface p-4">
+          <p className="text-xs text-text-muted mb-1">Est. Completion</p>
+          <p className="text-2xl font-semibold tabular-nums">
             {weeksNeeded !== Infinity
               ? fmtDate(estDate.toISOString())
               : "--"}
           </p>
-          <p className="text-[12px] text-t-secondary mt-1.5">
+          <p className="text-xs text-text-muted mt-1">
             {weeksNeeded !== Infinity
               ? `${Math.ceil(weeksNeeded)} weeks out`
               : `${remaining} steps remaining`}
@@ -180,12 +180,12 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
       </div>
 
       {/* Velocity Bar Chart */}
-      <div className="bg-white border border-border rounded-card p-card">
+      <div className="rounded-xl bg-surface p-4">
         <ResponsiveContainer width="100%" height={80}>
           <BarChart data={buckets}>
             <XAxis
               dataKey="week"
-              tick={{ fontSize: 10, fill: "#94A3B8" }}
+              tick={{ fontSize: 10, fill: "#94a3b8" }}
               axisLine={false}
               tickLine={false}
             />
@@ -194,7 +194,7 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
             />
             <Bar
               dataKey="count"
-              fill="#0F766E"
+              fill="#2563EB"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
