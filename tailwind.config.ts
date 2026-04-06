@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -13,13 +12,13 @@ const config: Config = {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       colors: {
-        bg: "var(--bg)",
-        surface: "var(--surface)",
-        "surface-hover": "var(--surface-hover)",
-        border: "var(--border)",
-        "text-primary": "var(--text-primary)",
-        "text-secondary": "var(--text-secondary)",
-        "text-muted": "var(--text-muted)",
+        bg: "#FFFFFF",
+        surface: "#F9FAFB",
+        "surface-hover": "#F3F4F6",
+        border: "#E5E7EB",
+        "text-primary": "#111827",
+        "text-secondary": "#6B7280",
+        "text-muted": "#9CA3AF",
         green: {
           DEFAULT: "#059669",
           light: "#ECFDF5",

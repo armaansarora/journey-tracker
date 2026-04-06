@@ -71,11 +71,11 @@ export function ProgressRing({ completed, total, size = 200 }: Props) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[44px] font-semibold tabular-nums text-text-primary leading-none tracking-tight">
+        <span className="text-[44px] font-semibold text-[#111827] tabular-nums leading-none tracking-tight">
           {displayPct}
-          <span className="text-2xl text-text-muted">%</span>
+          <span className="text-2xl text-[#9CA3AF]">%</span>
         </span>
-        <span className="text-[13px] text-text-secondary mt-2 font-medium tabular-nums">
+        <span className="text-[13px] text-[#6B7280] mt-2 font-medium tabular-nums">
           {displayDone} of {total} complete
         </span>
       </div>

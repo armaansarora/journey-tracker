@@ -24,18 +24,6 @@ const SCENARIOS = [
     note: "Phase D alternative",
   },
   { id: "retell", label: "Retell Voice AI", monthly: 50, note: "Future" },
-  {
-    id: "composio",
-    label: "Composio integrations",
-    monthly: 29,
-    note: "If CLI tools aren't enough",
-  },
-  {
-    id: "gotohuman",
-    label: "gotoHuman approvals",
-    monthly: 39,
-    note: "Cut from plan",
-  },
 ];
 
 const BAR_COLORS = ["#2563EB", "#D97706"];
@@ -65,7 +53,7 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
   ];
 
   return (
-    <section className="rounded-2xl border border-border bg-[#F9FAFB] p-5">
+    <section className="bg-white border border-[#E5E7EB] rounded-xl p-5">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between text-left cursor-pointer"
@@ -124,10 +112,10 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
                         role="switch"
                         aria-checked={isOn}
                         onClick={() => toggle(s.id)}
-                        className={`relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors ${isOn ? "bg-blue-600" : "bg-[#D1D5DB]"}`}
+                        className={`relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors ${isOn ? "bg-[#2563EB]" : "bg-[#D1D5DB]"}`}
                       >
                         <span
-                          className={`pointer-events-none inline-block h-[18px] w-[18px] translate-y-[2px] rounded-full bg-white shadow transition-transform ${isOn ? "translate-x-[20px]" : "translate-x-[2px]"}`}
+                          className={`pointer-events-none inline-block h-[18px] w-[18px] translate-y-[2px] rounded-full bg-white transition-transform ${isOn ? "translate-x-[20px]" : "translate-x-[2px]"}`}
                         />
                       </button>
                     </div>
@@ -135,7 +123,7 @@ export function CostProjections({ currentMonthlyBurn }: Props) {
                 );
               })}
 
-              <div className="mt-4 space-y-1.5 border-t border-border pt-4 text-sm">
+              <div className="mt-4 space-y-1.5 border-t border-[#E5E7EB] pt-4 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#6B7280]">Projected monthly</span>
                   <span className="font-bold text-[#111827] tabular-nums">
