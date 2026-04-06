@@ -14,15 +14,13 @@ export const metadata: Metadata = {
     "34-step implementation roadmap for building an autonomous AI business operator for a NYC real estate company.",
   openGraph: {
     title: "Journey Realty Group — AI Automation Tracker",
-    description:
-      "34-step implementation roadmap for building an autonomous AI business operator for a NYC real estate company.",
+    description: "34-step roadmap for an autonomous AI business operator.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Journey Realty Group — AI Automation Tracker",
-    description:
-      "34-step implementation roadmap for building an autonomous AI business operator for a NYC real estate company.",
+    description: "34-step roadmap for an autonomous AI business operator.",
   },
 };
 
@@ -31,9 +29,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans bg-white text-text-primary antialiased">
-        {children}
-      </body>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }

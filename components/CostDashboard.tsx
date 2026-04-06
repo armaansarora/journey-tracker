@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { monthsBetween, fmtCost } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { STEPS } from "@/lib/steps";
+import { monthsBetween, fmtCost } from "@/lib/utils";
 import {
   PieChart,
   Pie,
@@ -13,7 +14,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { motion } from "framer-motion";
 
 type Props = {
   completedIds: Set<string>;
@@ -21,11 +21,11 @@ type Props = {
 };
 
 const SERVICE_MAP: Record<string, { label: string; cost: number; color: string }> = {
-  a1:  { label: "Google Workspace", cost: 42,   color: "#2563EB" },
+  a1:  { label: "Google Workspace", cost: 42,   color: "#0F766E" },
   a8:  { label: "Hetzner VPS",      cost: 16,   color: "#059669" },
   a11: { label: "LLM APIs",         cost: 15,   color: "#7C3AED" },
-  a13: { label: "Domain",           cost: 1,    color: "#0891B2" },
-  a17: { label: "Backblaze B2",     cost: 0.5,  color: "#D97706" },
+  a13: { label: "Domain",           cost: 1,    color: "#0369A1" },
+  a17: { label: "B2",               cost: 0.50, color: "#D97706" },
 };
 
 export function CostDashboard({ completedIds, stepRows }: Props) {
@@ -41,16 +41,6 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
 
   const oneTimeTotal = useMemo(
     () => completedSteps.reduce((sum, s) => sum + s.one_time_cost, 0),
-    [completedSteps],
-  );
-
-  const activeServiceCount = useMemo(
-    () => completedSteps.filter((s) => s.monthly_cost > 0).length,
-    [completedSteps],
-  );
-
-  const purchaseCount = useMemo(
-    () => completedSteps.filter((s) => s.one_time_cost > 0).length,
     [completedSteps],
   );
 
@@ -70,29 +60,9 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
     return total;
   }, [completedSteps, stepRows, now]);
 
-  const firstCompletion = useMemo(() => {
-    let earliest: string | null = null;
-    for (const step of completedSteps) {
-      const row = stepRows.get(step.id);
-      if (row?.completed_at) {
-        if (!earliest || row.completed_at < earliest) {
-          earliest = row.completed_at;
-        }
-      }
-    }
-    return earliest;
-  }, [completedSteps, stepRows]);
-
   const projectedYear1 = monthlyBurn * 12 + oneTimeTotal;
 
-  const firstDateStr = firstCompletion
-    ? new Date(firstCompletion).toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      })
-    : "N/A";
-
-  /* ── Donut data ── */
+  /* -- Donut data -- */
   const donutServices = useMemo(() => {
     const services: { label: string; cost: number; color: string }[] = [];
     for (const [id, svc] of Object.entries(SERVICE_MAP)) {
@@ -103,7 +73,7 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
     return services;
   }, [completedIds]);
 
-  /* ── Sparkline data ── */
+  /* -- Sparkline data -- */
   const sparklineData = useMemo(() => {
     const costSteps = completedSteps
       .filter((s) => s.monthly_cost > 0)
@@ -141,34 +111,18 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
     return points;
   }, [completedSteps, stepRows]);
 
-  /* ── KPI definitions ── */
+  /* -- KPI definitions -- */
   const kpis = [
-    {
-      label: "Monthly Burn",
-      value: fmtCost(Math.round(monthlyBurn)),
-      sub: `${activeServiceCount} services`,
-    },
-    {
-      label: "Total Spent",
-      value: fmtCost(Math.round(totalSpent)),
-      sub: `Since ${firstDateStr}`,
-    },
-    {
-      label: "One-Time Costs",
-      value: fmtCost(Math.round(oneTimeTotal)),
-      sub: `${purchaseCount} purchases`,
-    },
-    {
-      label: "Year 1 Projected",
-      value: fmtCost(Math.round(projectedYear1)),
-      sub: "At current rate",
-    },
+    { label: "Monthly Burn", value: fmtCost(Math.round(monthlyBurn)) },
+    { label: "Total Spent", value: fmtCost(Math.round(totalSpent)) },
+    { label: "One-Time Costs", value: fmtCost(Math.round(oneTimeTotal)) },
+    { label: "Year 1 Projected", value: fmtCost(Math.round(projectedYear1)) },
   ];
 
-  /* ── Empty state ── */
+  /* -- Empty state -- */
   if (completedSteps.length === 0) {
     return (
-      <p className="text-sm text-[#9CA3AF] text-center py-10">
+      <p className="text-sm text-t-muted text-center py-10">
         No active services yet.
       </p>
     );
@@ -182,25 +136,24 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
       transition={{ duration: 0.4 }}
       className="space-y-8"
     >
-      {/* ── KPI Cards ── */}
+      {/* -- KPI Cards -- */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
-            className="bg-white border border-[#E5E7EB] rounded-xl p-5"
+            className="bg-white border border-border rounded-card p-card"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9CA3AF] mb-2">
+            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-t-muted mb-2">
               {kpi.label}
             </p>
-            <p className="text-[28px] font-semibold text-[#111827] tabular-nums leading-none">
+            <p className="text-[28px] font-semibold text-t-primary tabular-nums leading-none">
               {kpi.value}
             </p>
-            <p className="text-[12px] text-[#6B7280] mt-1.5">{kpi.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* ── Donut Chart ── */}
+      {/* -- Donut Chart -- */}
       {donutServices.length > 0 && (
         <div className="flex flex-col items-center gap-4">
           <PieChart width={180} height={180}>
@@ -234,8 +187,8 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
                   className="w-[10px] h-[10px] rounded-full shrink-0"
                   style={{ backgroundColor: svc.color }}
                 />
-                <span className="text-[#6B7280]">{svc.label}</span>
-                <span className="font-medium text-[#111827]">
+                <span className="text-t-secondary">{svc.label}</span>
+                <span className="font-medium text-t-primary">
                   {fmtCost(svc.cost)}
                 </span>
               </div>
@@ -244,19 +197,19 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
         </div>
       )}
 
-      {/* ── Area Sparkline ── */}
+      {/* -- Area Sparkline -- */}
       {sparklineData && (
         <ResponsiveContainer width="100%" height={100}>
           <AreaChart data={sparklineData}>
             <defs>
               <linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2563EB" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="#2563EB" stopOpacity={0.1} />
+                <stop offset="0%" stopColor="#0F766E" stopOpacity={0.1} />
+                <stop offset="100%" stopColor="#0F766E" stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 10, fill: "#9CA3AF" }}
+              tick={{ fontSize: 10, fill: "#94A3B8" }}
               axisLine={false}
               tickLine={false}
             />
@@ -266,7 +219,7 @@ export function CostDashboard({ completedIds, stepRows }: Props) {
             <Area
               type="monotone"
               dataKey="cost"
-              stroke="#2563EB"
+              stroke="#0F766E"
               strokeWidth={1.5}
               fill="url(#costFill)"
               dot={false}

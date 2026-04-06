@@ -4,18 +4,18 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase, type StepRow, type ActivityLogRow } from "@/lib/supabase";
 import { STEPS, PHASES, type Phase } from "@/lib/steps";
-import { ProgressRing } from "@/components/ProgressRing";
-import { WhatsNext } from "@/components/WhatsNext";
+import ProgressRing from "@/components/ProgressRing";
+import WhatsNext from "@/components/WhatsNext";
 import { PhaseSection } from "@/components/PhaseSection";
 import { PhaseDLocked } from "@/components/PhaseDLocked";
 import { CostDashboard } from "@/components/CostDashboard";
 import { VelocityTracker } from "@/components/VelocityTracker";
 import { CostProjections } from "@/components/CostProjections";
 import { ActivityLog } from "@/components/ActivityLog";
-import { LoadingSkeleton } from "@/components/LoadingSkeleton";
-import { TabBar, type Tab } from "@/components/TabBar";
-import { SectionNav } from "@/components/SectionNav";
-import { Footer } from "@/components/Footer";
+import LoadingSkeleton from "@/components/LoadingSkeleton";
+import TabBar, { type Tab } from "@/components/TabBar";
+import SectionNav from "@/components/SectionNav";
+import Footer from "@/components/Footer";
 
 type RowData = { completed_at: string | null; notes: string };
 
@@ -26,6 +26,7 @@ export default function HomePage() {
   const [loaded, setLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("roadmap");
 
+  /* ── Init ── */
   useEffect(() => {
     let mounted = true;
     async function init() {
@@ -57,40 +58,41 @@ export default function HomePage() {
     }
     init();
 
-    const stepChannel = supabase.channel("steps-rt")
+    const stepCh = supabase.channel("steps-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "steps" }, (payload) => {
         const row = payload.new as StepRow | undefined;
         if (!row?.id) return;
-        setCompletedIds((prev) => { const n = new Set(prev); if (row.completed) n.add(row.id); else n.delete(row.id); return n; });
-        setStepRows((prev) => { const n = new Map(prev); n.set(row.id, { completed_at: row.completed_at, notes: row.notes ?? "" }); return n; });
+        setCompletedIds((p) => { const n = new Set(p); row.completed ? n.add(row.id) : n.delete(row.id); return n; });
+        setStepRows((p) => { const n = new Map(p); n.set(row.id, { completed_at: row.completed_at, notes: row.notes ?? "" }); return n; });
       }).subscribe();
 
-    const logChannel = supabase.channel("activity-rt")
+    const logCh = supabase.channel("activity-rt")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "activity_log" }, (payload) => {
         const row = payload.new as ActivityLogRow | undefined;
-        if (row) setActivityLogs((prev) => [row, ...prev]);
+        if (row) setActivityLogs((p) => [row, ...p]);
       }).subscribe();
 
-    return () => { mounted = false; supabase.removeChannel(stepChannel); supabase.removeChannel(logChannel); };
+    return () => { mounted = false; supabase.removeChannel(stepCh); supabase.removeChannel(logCh); };
   }, []);
 
-  const toggle = useCallback(async (id: string, nextCompleted: boolean) => {
+  /* ── Toggle ── */
+  const toggle = useCallback(async (id: string, next: boolean) => {
     const now = new Date().toISOString();
-    setCompletedIds((prev) => { const n = new Set(prev); if (nextCompleted) n.add(id); else n.delete(id); return n; });
-    setStepRows((prev) => { const n = new Map(prev); const old = n.get(id); n.set(id, { ...(old ?? { notes: "" }), completed_at: nextCompleted ? now : null }); return n; });
+    setCompletedIds((p) => { const n = new Set(p); next ? n.add(id) : n.delete(id); return n; });
+    setStepRows((p) => { const n = new Map(p); const old = n.get(id); n.set(id, { ...(old ?? { notes: "" }), completed_at: next ? now : null }); return n; });
 
     const { error } = await supabase.from("steps").upsert(
-      { id, completed: nextCompleted, completed_at: nextCompleted ? now : null, updated_at: now },
+      { id, completed: next, completed_at: next ? now : null, updated_at: now },
       { onConflict: "id" },
     );
     if (error) {
-      setCompletedIds((prev) => { const n = new Set(prev); if (nextCompleted) n.delete(id); else n.add(id); return n; });
+      setCompletedIds((p) => { const n = new Set(p); next ? n.delete(id) : n.add(id); return n; });
       return;
     }
-    supabase.from("activity_log").insert({ step_id: id, action: nextCompleted ? "completed" : "uncompleted" }).then();
+    supabase.from("activity_log").insert({ step_id: id, action: next ? "completed" : "uncompleted" }).then();
   }, []);
 
-  // Derived
+  /* ── Derived ── */
   const byPhase = useMemo(() => {
     const m: Record<Phase, typeof STEPS> = { A: [], B: [], C: [], D: [] };
     for (const s of STEPS) m[s.phase].push(s);
@@ -101,8 +103,7 @@ export default function HomePage() {
     const blocked = new Set<string>(), available = new Set<string>();
     for (const s of STEPS) {
       if (completedIds.has(s.id)) continue;
-      if (s.dependencies.some((d) => !completedIds.has(d))) blocked.add(s.id);
-      else available.add(s.id);
+      s.dependencies.some((d) => !completedIds.has(d)) ? blocked.add(s.id) : available.add(s.id);
     }
     return { blockedIds: blocked, availableIds: available };
   }, [completedIds]);
@@ -120,48 +121,51 @@ export default function HomePage() {
     [completedIds],
   );
 
-  const total = STEPS.length;
   const completedCount = completedIds.size;
-  const phaseStartIndex: Record<Phase, number> = {
+  const phaseStartIdx: Record<Phase, number> = {
     A: 0, B: byPhase.A.length,
     C: byPhase.A.length + byPhase.B.length,
     D: byPhase.A.length + byPhase.B.length + byPhase.C.length,
   };
 
+  /* ── Loading ── */
   if (!loaded) {
-    return <main className="mx-auto w-full max-w-3xl px-4 sm:px-6 pt-10 sm:pt-16 pb-12"><LoadingSkeleton /></main>;
+    return <main className="mx-auto w-full max-w-[800px] px-5 sm:px-8 pt-12 sm:pt-20 pb-16"><LoadingSkeleton /></main>;
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 sm:px-6 pt-10 sm:pt-16 pb-12">
-      {/* Hero */}
+    <main className="mx-auto w-full max-w-[800px] px-5 sm:px-8 pt-12 sm:pt-20 pb-16">
+
+      {/* ━━ Hero ━━ */}
       <motion.header
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="mb-6"
+        transition={{ duration: 0.35 }}
+        className="mb-8"
       >
-        <div className="mb-3">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#2563EB] bg-[#EFF6FF] border border-[#DBEAFE] px-2.5 py-1 rounded-full">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] animate-pulse" />
-            Implementation Roadmap
-          </span>
-        </div>
-        <h1 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] font-semibold leading-[1.1] tracking-[-0.02em] text-[#111827]">
+        {/* Badge */}
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-primary bg-primary-light border border-primary/15 px-2.5 py-1 rounded-full mb-4">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          Implementation Roadmap
+        </span>
+
+        {/* Title */}
+        <h1 className="text-[2rem] sm:text-[2.75rem] font-bold leading-[1.08] tracking-[-0.025em] text-t-primary">
           Journey Realty Group
         </h1>
-        <p className="text-[1.5rem] sm:text-[1.75rem] md:text-[2rem] font-medium leading-[1.15] tracking-[-0.015em] text-[#6B7280] mt-1">
+        <p className="text-[1.25rem] sm:text-[1.5rem] font-medium leading-[1.2] tracking-[-0.01em] text-t-secondary mt-1.5">
           AI Automation Project
         </p>
-        <p className="mt-5 text-[15px] sm:text-[17px] text-[#6B7280] leading-[1.65] max-w-2xl">
-          Building an autonomous AI business operator for a NYC real estate company. 34 steps across 4 phases.
+        <p className="mt-4 text-[15px] text-t-secondary leading-[1.65] max-w-xl">
+          34-step roadmap for building an autonomous AI business operator for a NYC real estate company.
         </p>
 
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-[auto,1fr] gap-8 md:gap-10 items-center">
+        {/* Progress + Phase bars */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-[auto,1fr] gap-10 items-center">
           <div className="flex justify-center md:justify-start">
-            <ProgressRing completed={completedCount} total={total} size={200} />
+            <ProgressRing completed={completedCount} total={STEPS.length} size={200} />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {(["A", "B", "C", "D"] as Phase[]).map((p) => {
               const meta = PHASES[p];
               const ps = byPhase[p];
@@ -169,17 +173,26 @@ export default function HomePage() {
               const pct = ps.length > 0 ? (done / ps.length) * 100 : 0;
               return (
                 <div key={p}>
-                  <div className="flex items-center justify-between text-[13px] sm:text-sm mb-1.5">
+                  <div className="flex items-center justify-between text-[13px] mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white" style={{ backgroundColor: meta.accent }}>{p}</span>
-                      <span className="font-semibold text-[#111827]">{meta.short}</span>
+                      <span
+                        className="inline-flex h-[22px] w-[22px] items-center justify-center rounded text-[10px] font-bold text-white"
+                        style={{ backgroundColor: meta.accent }}
+                      >{p}</span>
+                      <span className="font-semibold text-t-primary">{meta.short}</span>
                     </div>
-                    <span className="text-[#6B7280] tabular-nums font-medium">
-                      {ps.length > 0 ? `${done} / ${ps.length}` : "Later"}
+                    <span className="text-t-muted tabular-nums font-medium">
+                      {ps.length > 0 ? `${done}/${ps.length}` : "Later"}
                     </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-[#F1F5F9] overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.1 }} className="h-full rounded-full" style={{ backgroundColor: meta.accent }} />
+                  <div className="h-[6px] w-full rounded-full bg-[#E2E8F0] overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.7, delay: 0.05 }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: meta.accent }}
+                    />
                   </div>
                 </div>
               );
@@ -188,21 +201,23 @@ export default function HomePage() {
         </div>
       </motion.header>
 
-      {/* Tabs */}
+      {/* ━━ Tab Bar ━━ */}
       <TabBar active={activeTab} onChange={setActiveTab} />
 
-      {/* Content */}
+      {/* ━━ Tab Content ━━ */}
       <AnimatePresence mode="wait">
         {activeTab === "roadmap" && (
-          <motion.div key="roadmap" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-            <div className="mt-8 mb-12">
+          <motion.div key="roadmap" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
+            <div className="mt-8 mb-10">
               <WhatsNext next={nextStep} prevCompletedAt={prevCompletedAt} />
             </div>
-            <div className="space-y-16 sm:space-y-20">
+            <div className="space-y-16">
               {(["A", "B", "C"] as Phase[]).map((p) => (
-                <PhaseSection key={p} phase={p} steps={byPhase[p]} completedIds={completedIds}
+                <PhaseSection
+                  key={p} phase={p} steps={byPhase[p]} completedIds={completedIds}
                   currentStepId={nextStep?.id ?? null} blockedIds={blockedIds} availableIds={availableIds}
-                  stepRows={stepRows} onToggle={toggle} startIndex={phaseStartIndex[p]} />
+                  stepRows={stepRows} onToggle={toggle} startIndex={phaseStartIdx[p]}
+                />
               ))}
               <PhaseDLocked />
             </div>
@@ -210,7 +225,7 @@ export default function HomePage() {
         )}
 
         {activeTab === "dashboard" && (
-          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="mt-8 space-y-12">
+          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }} className="mt-8 space-y-12">
             <CostDashboard completedIds={completedIds} stepRows={stepRows} />
             <VelocityTracker completedIds={completedIds} stepRows={stepRows} />
             <CostProjections currentMonthlyBurn={monthlyBurn} />
@@ -218,7 +233,7 @@ export default function HomePage() {
         )}
 
         {activeTab === "activity" && (
-          <motion.div key="activity" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="mt-8">
+          <motion.div key="activity" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }} className="mt-8">
             <ActivityLog logs={activityLogs} />
           </motion.div>
         )}

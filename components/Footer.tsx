@@ -1,7 +1,7 @@
-export function Footer() {
+export default function Footer() {
   return (
-    <footer className="mt-16 border-t border-[#E5E7EB] py-8 text-center text-sm text-[#9CA3AF]">
-      Built by Armaan for Journey Realty Group · 2026
+    <footer className="mt-16 border-t border-border py-8 text-center text-sm text-t-muted">
+      Built by Armaan for Journey Realty Group &middot; 2026
     </footer>
   );
 }

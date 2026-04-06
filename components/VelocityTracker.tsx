@@ -52,8 +52,7 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
 
     const sevenDaysAgo = new Date(now.getTime() - MS_PER_WEEK);
     const recentCount = dates.filter((d) => d >= sevenDaysAgo).length;
-    const recentRate = recentCount;
-    const trendUp = recentRate > stepsPerWeek;
+    const trendUp = recentCount > stepsPerWeek;
 
     const gaps: number[] = [];
     for (let i = 1; i < dates.length; i++) {
@@ -64,7 +63,7 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
     const lastGap = gaps.length > 0 ? gaps[gaps.length - 1] : 0;
     const gettingFaster = gaps.length > 0 && lastGap < avgGap;
 
-    const remaining = 34 - completedCount;
+    const remaining = STEPS.length - completedCount;
     const weeksNeeded = stepsPerWeek > 0 ? remaining / stepsPerWeek : Infinity;
     const estDate = new Date(now.getTime() + weeksNeeded * MS_PER_WEEK);
 
@@ -99,9 +98,9 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-[#E5E7EB] rounded-xl p-5 text-center"
+        className="bg-white border border-border rounded-card p-card text-center"
       >
-        <p className="text-sm text-[#9CA3AF]">
+        <p className="text-sm text-t-muted">
           Start a step to see projections
         </p>
       </motion.div>
@@ -129,50 +128,50 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Steps / Week */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9CA3AF]">
+        <div className="bg-white border border-border rounded-card p-card">
+          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-t-muted">
             Steps / Week
           </p>
-          <p className="text-2xl font-semibold text-[#111827] tabular-nums">
+          <p className="text-[28px] font-semibold text-t-primary tabular-nums leading-none mt-1">
             {stepsPerWeek.toFixed(1)}
           </p>
-          <p className="text-[12px] text-[#6B7280] mt-1">
+          <p className="text-[12px] text-t-secondary mt-1.5">
             {trendUp ? (
-              <span className="text-[#059669]">&#8593; trending faster</span>
+              <span className="text-success">&#8593; trending faster</span>
             ) : (
-              <span className="text-[#D97706]">&#8595; trending slower</span>
+              <span className="text-warn">&#8595; trending slower</span>
             )}
           </p>
         </div>
 
         {/* Avg Time / Step */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9CA3AF]">
+        <div className="bg-white border border-border rounded-card p-card">
+          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-t-muted">
             Avg Time / Step
           </p>
-          <p className="text-2xl font-semibold text-[#111827] tabular-nums">
+          <p className="text-[28px] font-semibold text-t-primary tabular-nums leading-none mt-1">
             {avgGap > 0 ? fmtDuration(avgGap) : "--"}
           </p>
-          <p className="text-[12px] text-[#6B7280] mt-1">
+          <p className="text-[12px] text-t-secondary mt-1.5">
             {gettingFaster ? (
-              <span className="text-[#059669]">&#8595; getting faster</span>
+              <span className="text-success">&#8595; getting faster</span>
             ) : (
-              <span className="text-[#D97706]">&#8593; getting slower</span>
+              <span className="text-warn">&#8593; getting slower</span>
             )}
           </p>
         </div>
 
         {/* Est. Completion */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#9CA3AF]">
+        <div className="bg-white border border-border rounded-card p-card">
+          <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-t-muted">
             Est. Completion
           </p>
-          <p className="text-2xl font-semibold text-[#111827] tabular-nums">
+          <p className="text-[28px] font-semibold text-t-primary tabular-nums leading-none mt-1">
             {weeksNeeded !== Infinity
               ? fmtDate(estDate.toISOString())
               : "--"}
           </p>
-          <p className="text-[12px] text-[#6B7280] mt-1">
+          <p className="text-[12px] text-t-secondary mt-1.5">
             {weeksNeeded !== Infinity
               ? `${Math.ceil(weeksNeeded)} weeks out`
               : `${remaining} steps remaining`}
@@ -181,12 +180,12 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
       </div>
 
       {/* Velocity Bar Chart */}
-      <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
+      <div className="bg-white border border-border rounded-card p-card">
         <ResponsiveContainer width="100%" height={80}>
           <BarChart data={buckets}>
             <XAxis
               dataKey="week"
-              tick={{ fontSize: 10, fill: "#9CA3AF" }}
+              tick={{ fontSize: 10, fill: "#94A3B8" }}
               axisLine={false}
               tickLine={false}
             />
@@ -195,7 +194,7 @@ export function VelocityTracker({ completedIds, stepRows }: Props) {
             />
             <Bar
               dataKey="count"
-              fill="#2563EB"
+              fill="#0F766E"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

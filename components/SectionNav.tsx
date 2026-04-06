@@ -1,37 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { PHASES, type Phase } from "@/lib/steps";
 
-const PHASE_IDS: Phase[] = ["A", "B", "C", "D"];
+const PHASE_KEYS: Phase[] = ["A", "B", "C", "D"];
 
-export function SectionNav() {
+export default function SectionNav({ currentPhase }: { currentPhase?: Phase }) {
   const [visible, setVisible] = useState(false);
-  const [current, setCurrent] = useState<Phase>("A");
 
   useEffect(() => {
-    function onScroll() {
-      setVisible(window.scrollY > 400);
-
-      // Determine current phase based on scroll position
-      for (const p of [...PHASE_IDS].reverse()) {
-        const el = document.getElementById(`phase-${p}`);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight * 0.4) {
-            setCurrent(p);
-            break;
-          }
-        }
-      }
-    }
+    const onScroll = () => setVisible(window.scrollY > 400);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollTo = (p: Phase) => {
-    document.getElementById(`phase-${p}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollTo = (phase: Phase) => {
+    const el = document.getElementById(`phase-${phase}`);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -40,27 +26,25 @@ export function SectionNav() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
+          exit={{ opacity: 0, y: 12 }}
           transition={{ duration: 0.2 }}
-          className="fixed bottom-6 right-4 sm:bottom-auto sm:top-20 sm:right-6 z-50 flex flex-col items-end gap-2"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-1.5 md:fixed md:top-6 md:right-6 md:bottom-auto"
         >
-          {/* Phase pills */}
-          <div className="flex gap-1 rounded-full bg-bg/95 backdrop-blur-sm border border-border shadow-lg px-1.5 py-1.5">
-            {PHASE_IDS.map((p) => {
-              const meta = PHASES[p];
-              const isCurrent = current === p;
+          <div className="flex items-center gap-1 rounded-full bg-white border border-border px-2 py-1.5">
+            {PHASE_KEYS.map((p) => {
+              const isCurrent = p === currentPhase;
               return (
                 <button
                   key={p}
                   onClick={() => scrollTo(p)}
-                  className="relative h-8 w-8 rounded-full text-xs font-bold transition-colors cursor-pointer flex items-center justify-center"
-                  style={{
-                    backgroundColor: isCurrent ? meta.accent : "transparent",
-                    color: isCurrent ? "#fff" : "#9CA3AF",
-                  }}
-                  aria-label={`Scroll to Phase ${p}`}
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors duration-200 cursor-pointer ${
+                    isCurrent
+                      ? "bg-primary text-white"
+                      : "text-t-muted hover:text-t-secondary"
+                  }`}
+                  title={PHASES[p].title}
                 >
                   {p}
                 </button>
@@ -68,13 +52,22 @@ export function SectionNav() {
             })}
           </div>
 
-          {/* Back to top */}
           <button
             onClick={scrollToTop}
-            aria-label="Back to top"
-            className="h-10 w-10 sm:h-9 sm:w-9 rounded-full bg-blue text-white shadow-lg flex items-center justify-center hover:bg-[#1D4ED8] transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white cursor-pointer transition-colors duration-200 hover:bg-primary-dark"
+            title="Back to top"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <polyline points="18 15 12 9 6 15" />
             </svg>
           </button>
