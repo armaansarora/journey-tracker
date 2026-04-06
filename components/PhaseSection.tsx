@@ -1,6 +1,7 @@
 "use client";
 
-import { Step, Phase, PHASES } from "@/lib/steps";
+import type { Step, Phase } from "@/lib/steps";
+import { PHASES } from "@/lib/steps";
 import { StepCard } from "./StepCard";
 import { motion } from "framer-motion";
 
@@ -17,8 +18,15 @@ type Props = {
 };
 
 export function PhaseSection({
-  phase, steps, completedIds, currentStepId, blockedIds, availableIds,
-  stepRows, onToggle, startIndex,
+  phase,
+  steps,
+  completedIds,
+  currentStepId,
+  blockedIds,
+  availableIds,
+  stepRows,
+  onToggle,
+  startIndex,
 }: Props) {
   const meta = PHASES[phase];
   const done = steps.filter((s) => completedIds.has(s.id)).length;
@@ -26,45 +34,49 @@ export function PhaseSection({
 
   return (
     <motion.section
+      id={`phase-${phase}`}
+      className="scroll-mt-16 rounded-card p-5"
+      style={{ backgroundColor: meta.light + "35" }}
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      id={`phase-${phase}`}
-      className="rounded-xl p-5 sm:p-6 scroll-mt-16"
-      style={{ backgroundColor: meta.light + "40" }}
     >
       {/* Phase header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 sm:gap-4 mb-4">
+          {/* 48px square badge */}
           <span
-            className="inline-flex items-center justify-center h-12 w-12 rounded-xl text-xl font-bold text-white shrink-0"
+            className="inline-flex items-center justify-center h-12 w-12 rounded-card text-xl font-bold text-white flex-shrink-0"
             style={{ backgroundColor: meta.accent }}
           >
             {phase}
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-semibold text-[#111827] leading-tight tracking-tight">
+            <h2 className="text-[20px] font-semibold text-t-primary leading-tight">
               {meta.title}
             </h2>
-            <div className="text-xs sm:text-sm text-[#9CA3AF] mt-0.5 font-medium">
-              {meta.weeks} · {done} of {steps.length} complete
-            </div>
+            <p className="text-[13px] text-t-muted mt-0.5 font-medium">
+              {meta.weeks} &middot; {done} of {steps.length} complete
+            </p>
           </div>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-[#F1F5F9] overflow-hidden">
+
+        {/* Progress bar: 6px tall */}
+        <div className="h-1.5 w-full rounded-full bg-[#E2E8F0] overflow-hidden">
           <motion.div
+            className="h-full rounded-full"
+            style={{ backgroundColor: meta.accent }}
             initial={{ width: 0 }}
             whileInView={{ width: `${pct}%` }}
             viewport={{ once: false }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="h-full rounded-full"
-            style={{ backgroundColor: meta.accent }}
           />
         </div>
       </div>
 
-      <div className="space-y-4">
+      {/* Step cards */}
+      <div className="space-y-3">
         {steps.map((s, i) => {
           const row = stepRows.get(s.id);
           return (

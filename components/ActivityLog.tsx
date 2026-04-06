@@ -30,7 +30,7 @@ export function ActivityLog({ logs }: Props) {
   const visible = expanded ? sorted : sorted.slice(0, 3);
 
   return (
-    <section className="bg-white border border-[#E5E7EB] rounded-xl p-5">
+    <section className="bg-white border border-border rounded-card p-card">
       {/* Header */}
       <button
         type="button"
@@ -39,9 +39,9 @@ export function ActivityLog({ logs }: Props) {
         aria-expanded={expanded}
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-lg font-semibold text-[#111827]">Activity Log</span>
+          <span className="text-lg font-semibold text-t-primary">Activity Log</span>
           {sorted.length > 0 && (
-            <span className="text-xs font-semibold tabular-nums px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#6B7280]">
+            <span className="text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded-full bg-[#F1F5F9] text-t-secondary">
               {sorted.length}
             </span>
           )}
@@ -53,7 +53,7 @@ export function ActivityLog({ logs }: Props) {
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#9CA3AF"
+          stroke="#94A3B8"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -66,7 +66,7 @@ export function ActivityLog({ logs }: Props) {
       {/* Content */}
       {sorted.length === 0 ? (
         <div className="mt-4">
-          <p className="text-sm text-[#9CA3AF] text-center py-4">
+          <p className="text-sm text-t-muted text-center py-4">
             No activity yet. Mark a step complete to start tracking.
           </p>
         </div>
@@ -93,12 +93,12 @@ export function ActivityLog({ logs }: Props) {
                     }}
                   />
                   {/* Description */}
-                  <span className="flex-1 min-w-0 text-[13px] text-[#6B7280] truncate">
+                  <span className="flex-1 min-w-0 text-[13px] text-t-secondary truncate">
                     Step {stepNumber(log.step_id)} {log.action}:{" "}
                     &ldquo;{stepTitle(log.step_id)}&rdquo;
                   </span>
                   {/* Timestamp */}
-                  <span className="shrink-0 text-[13px] text-[#9CA3AF] tabular-nums">
+                  <span className="shrink-0 text-[13px] text-t-muted tabular-nums">
                     {fmtDateTime(log.created_at)}
                   </span>
                 </div>
@@ -107,7 +107,7 @@ export function ActivityLog({ logs }: Props) {
           </AnimatePresence>
 
           {sorted.length > 3 && !expanded && (
-            <p className="text-[13px] text-[#9CA3AF] text-center pt-1">
+            <p className="text-[13px] text-t-muted text-center pt-1">
               +{sorted.length - 3} more
             </p>
           )}
