@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journey Real Estate — Operations Software Recommendation</title>
+  <meta name="description" content="A boss-ready recommendation for the software Journey Real Estate should use to manage master leases, shared rooms, tenants, rent, leases, payments, alerts, and communication." />
+
+  <!-- Prevent flash of un-styled reveal content; mark JS available -->
+  <script>document.documentElement.classList.add('js');</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS
+       ============================================================ */
+    :root {
+      /* Surface */
+      --bg: #faf6ee;
+      --bg-tint: #f3ecdf;
+
+      /* Ink + text */
+      --ink: #15223f;
+      --ink-soft: #2c3b57;
+      --muted: #5a6679;
+      --muted-on-dark: rgba(255,255,255,0.72);
+
+      /* Brand */
+      --navy: #15223f;
+      --navy-deep: #0c1428;
+      --blue: #2457a6;
+      --teal: #0f9f9a;
+      --green: #12815f;
+      --gold: #e0a233;
+      --gold-ink: #8a5a00;
+      --coral: #e2693f;
+      --red: #c4474a;
+
+      /* Lines + glass */
+      --line: rgba(21, 34, 63, 0.10);
+      --line-strong: rgba(21, 34, 63, 0.16);
+      --glass: rgba(255,255,255,0.72);
+
+      /* Shadows (layered, soft) */
+      --shadow-sm: 0 1px 2px rgba(21,34,63,.05), 0 6px 16px rgba(21,34,63,.06);
+      --shadow-md: 0 2px 4px rgba(21,34,63,.05), 0 16px 40px rgba(21,34,63,.09);
+      --shadow-lg: 0 4px 8px rgba(21,34,63,.05), 0 30px 70px rgba(21,34,63,.13);
+      --shadow-dark: 0 30px 80px rgba(8,16,36,.40);
+
+      /* Radii */
+      --r-xl: 30px;
+      --r-lg: 22px;
+      --r-md: 16px;
+      --r-sm: 11px;
+
+      /* Layout + type */
+      --max: 1180px;
+      --font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+      --accent: var(--blue);
+    }
+
+    /* ============================================================
+       BASE
+       ============================================================ */
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y proximity;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--font);
+      font-feature-settings: "cv11", "ss01";
+      line-height: 1.5;
+      background:
+        radial-gradient(1100px 620px at 8% -6%, rgba(36, 87, 166, 0.10), transparent 60%),
+        radial-gradient(900px 540px at 100% 4%, rgba(15, 159, 154, 0.10), transparent 58%),
+        radial-gradient(1000px 700px at 75% 108%, rgba(224, 162, 51, 0.12), transparent 60%),
+        var(--bg);
+      background-attachment: fixed;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    :focus-visible {
+      outline: 2.5px solid var(--blue);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1, h2, h3 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      text-wrap: balance;
+    }
+    h1 {
+      font-size: clamp(44px, 5.6vw, 78px);
+      line-height: 1.0;
+      letter-spacing: -0.035em;
+      margin-bottom: 22px;
+      font-weight: 900;
+    }
+    h2 {
+      font-size: clamp(32px, 4.2vw, 54px);
+      line-height: 1.03;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+    h3 {
+      font-size: 20px;
+      line-height: 1.18;
+      letter-spacing: -0.015em;
+      margin-bottom: 9px;
+    }
+
+    .lead {
+      font-size: clamp(19px, 2vw, 26px);
+      line-height: 1.36;
+      color: var(--ink-soft);
+      max-width: 56ch;
+      margin-bottom: 26px;
+      letter-spacing: -0.012em;
+      text-wrap: pretty;
+      font-weight: 450;
+    }
+    .sublead { font-size: 17px; color: var(--muted); max-width: 70ch; }
+
+    .grad {
+      background: linear-gradient(105deg, var(--teal), var(--blue) 55%, var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ============================================================
+       TOP CONTROLS + PROGRESS + BRAND
+       ============================================================ */
+    .progress {
+      position: fixed;
+      z-index: 70;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: rgba(21,34,63,0.07);
+    }
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--teal), var(--blue) 55%, var(--gold));
+      transition: width 200ms ease;
+    }
+
+    .brand {
+      position: fixed;
+      z-index: 55;
+      top: 16px;
+      left: 22px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      padding: 8px 14px 8px 8px;
+      border-radius: 999px;
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(14px);
+    }
+    .brand .mark {
+      display: grid;
+      place-items: center;
+      width: 30px; height: 30px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .brand .sep { color: var(--muted); font-weight: 600; }
+
+    .deck-controls {
+      position: fixed;
+      z-index: 60;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.7);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border-radius: 999px;
+      box-shadow: var(--shadow-md);
+    }
+    .deck-controls button,
+    .deck-controls a {
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 8px 13px;
+      border-radius: 999px;
+      transition: background .2s, color .2s, transform .2s;
+      white-space: nowrap;
+    }
+    .deck-controls button:hover,
+    .deck-controls a:hover { background: rgba(21,34,63,0.07); }
+    .deck-controls button:active { transform: scale(.96); }
+    .deck-controls .primary { background: var(--navy); color: #fff; }
+    .deck-controls .primary:hover { background: var(--navy-deep); }
+    .deck-controls .counter {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 3px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+      padding: 0 6px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .01em;
+    }
+    .deck-controls .counter b { color: var(--ink); }
+    .deck-controls .divider { width: 1px; height: 20px; background: var(--line-strong); margin: 0 4px; }
+
+    /* Side rail navigation */
+    .rail {
+      position: fixed;
+      z-index: 55;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      align-items: center;
+    }
+    .rail a {
+      position: relative;
+      width: 9px; height: 9px;
+      border-radius: 999px;
+      background: rgba(21,34,63,0.20);
+      transition: background .3s, height .3s, transform .2s;
+    }
+    .rail a:hover { background: rgba(21,34,63,0.42); transform: scale(1.25); }
+    .rail a[aria-current="true"] {
+      height: 26px;
+      background: linear-gradient(var(--teal), var(--blue));
+    }
+    .rail a::after {
+      content: attr(data-label);
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%) translateX(6px);
+      white-space: nowrap;
+      background: var(--navy);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 9px;
+      border-radius: 8px;
+      letter-spacing: .01em;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: var(--shadow-md);
+      transition: opacity .25s, transform .25s;
+    }
+    .rail a:hover::after,
+    .rail a:focus-visible::after { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+    /* ============================================================
+       SLIDE SHELL
+       ============================================================ */
+    .slide {
+      min-height: 100vh;
+      padding: 104px 64px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      scroll-snap-align: start;
+    }
+    /* Per-slide accent rotation */
+    .slide:nth-of-type(6n+1) { --accent: var(--blue); }
+    .slide:nth-of-type(6n+2) { --accent: var(--teal); }
+    .slide:nth-of-type(6n+3) { --accent: var(--gold); }
+    .slide:nth-of-type(6n+4) { --accent: var(--green); }
+    .slide:nth-of-type(6n+5) { --accent: var(--blue); }
+    .slide:nth-of-type(6n)   { --accent: var(--teal); }
+
+    .slide::before,
+    .slide::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(36px);
+    }
+    .slide::before {
+      width: 420px; height: 420px;
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      right: -130px; top: 90px;
+    }
+    .slide::after {
+      width: 300px; height: 300px;
+      background: color-mix(in srgb, var(--teal) 12%, transparent);
+      left: -100px; bottom: 40px;
+    }
+
+    .wrap { width: min(var(--max), 100%); position: relative; z-index: 2; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .slide-number {
+      position: absolute;
+      right: 30px;
+      bottom: 22px;
+      font-family: var(--font-display);
+      font-size: 13px;
+      color: rgba(21,34,63,.34);
+      font-weight: 800;
+      letter-spacing: .04em;
+      z-index: 5;
+    }
+    .slide-number::after { content: " / 12"; color: rgba(21,34,63,.20); }
+
+    /* ============================================================
+       KICKER
+       ============================================================ */
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 14px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255,255,255,0.7);
+      color: var(--muted);
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 18%, transparent);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+      50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 8%, transparent); }
+    }
+
+    /* ============================================================
+       PANELS
+       ============================================================ */
+    .panel {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: var(--shadow-lg);
+      border-radius: var(--r-xl);
+      padding: 32px;
+      backdrop-filter: blur(16px);
+    }
+
+    .dark-panel {
+      background:
+        radial-gradient(140% 120% at 12% 8%, rgba(15,159,154,.28), transparent 42%),
+        radial-gradient(120% 120% at 100% 100%, rgba(36,87,166,.34), transparent 46%),
+        linear-gradient(135deg, #101a33 0%, #182b56 100%);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: var(--shadow-dark);
+      border-radius: var(--r-xl);
+      padding: 32px;
+      overflow: hidden;
+      position: relative;
+    }
+    .dark-panel > p { color: var(--muted-on-dark); }
+    .dark-panel .muted { color: rgba(255,255,255,0.6); }
+
+    .big-verdict { display: grid; gap: 14px; }
+    .verdict-row {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--r-md);
+      transition: background .25s, border-color .25s;
+    }
+    .verdict-row:hover { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.22); }
+    .verdict-row .num {
+      display: grid;
+      place-items: center;
+      width: 50px; height: 50px;
+      border-radius: 15px;
+      background: linear-gradient(150deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+      border: 1px solid rgba(255,255,255,.18);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 22px;
+    }
+    .verdict-row strong { font-size: 19px; display: block; margin-bottom: 3px; letter-spacing: -0.01em; }
+    .verdict-row span { color: rgba(255,255,255,.7); font-size: 14px; line-height: 1.4; }
+
+    /* ============================================================
+       PILLS
+       ============================================================ */
+    .pill-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 24px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: 1px solid var(--line-strong);
+      background: rgba(255,255,255,0.74);
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .pill::before {
+      content: "";
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .85;
+    }
+    .pill.green { background: rgba(18,129,95,.10); color: var(--green); border-color: rgba(18,129,95,.22); }
+    .pill.blue  { background: rgba(36,87,166,.10); color: var(--blue);  border-color: rgba(36,87,166,.20); }
+    .pill.gold  { background: rgba(224,162,51,.14); color: var(--gold-ink); border-color: rgba(224,162,51,.30); }
+    .pill.red   { background: rgba(196,71,74,.10); color: var(--red);   border-color: rgba(196,71,74,.22); }
+    .pill.dark  { background: rgba(21,34,63,.07); color: var(--navy); border-color: var(--line-strong); }
+
+    /* ============================================================
+       GRIDS + CARDS
+       ============================================================ */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+    .card {
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.85);
+      box-shadow: var(--shadow-md);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent) 9%, transparent);
+      right: -46px; top: -52px;
+      transition: transform .45s ease;
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+    .card:hover::after { transform: scale(1.25); }
+    .card p { color: var(--muted); margin-bottom: 0; }
+    .card .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+    .card .label::before {
+      content: "";
+      width: 16px; height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .score-card { display: flex; flex-direction: column; }
+    .score-card .score {
+      font-family: var(--font-display);
+      font-size: 56px;
+      line-height: .95;
+      letter-spacing: -0.04em;
+      font-weight: 900;
+      margin: 12px 0 2px;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(125deg, var(--ink) 10%, var(--blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .score-card small { color: var(--muted); font-weight: 700; font-size: 13px; }
+    .bar {
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(21,34,63,0.09);
+      margin-top: 18px;
+      overflow: hidden;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      width: var(--w);
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+    }
+    .js .bar span { width: 0; }
+    .js .card.in .bar span { width: var(--w); transition: width 1.1s cubic-bezier(.16,1,.3,1) .2s; }
+
+    /* ============================================================
+       CALLOUT
+       ============================================================ */
+    .callout {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 22px 24px;
+      border-radius: var(--r-lg);
+      background: linear-gradient(135deg, var(--navy-deep), var(--blue) 130%);
+      color: #fff;
+      box-shadow: var(--shadow-lg);
+      margin-top: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .callout::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: linear-gradient(var(--teal), var(--gold));
+    }
+    .callout .c-icon {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 38px; height: 38px;
+      border-radius: 11px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+    .callout .c-icon svg { width: 20px; height: 20px; stroke: #fff; }
+    .callout strong { color: #fff; }
+    .callout p { margin: 0; color: rgba(255,255,255,.82); line-height: 1.5; }
+
+    /* ============================================================
+       TABLE
+       ============================================================ */
+    .table-scroll { border-radius: var(--r-lg); box-shadow: var(--shadow-lg); }
+    .simple-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: var(--r-lg);
+      background: rgba(255,255,255,0.86);
+      border: 1px solid rgba(255,255,255,0.85);
+    }
+    .simple-table th,
+    .simple-table td {
+      padding: 16px 16px;
+      border-bottom: 1px solid rgba(21,34,63,0.08);
+      vertical-align: top;
+      text-align: left;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+    .simple-table thead th {
+      color: #51607a;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: rgba(21,34,63,0.04);
+      border-bottom: 1.5px solid rgba(21,34,63,0.12);
+    }
+    .simple-table tbody tr { transition: background .2s; }
+    .simple-table tbody tr:hover { background: color-mix(in srgb, var(--blue) 5%, transparent); }
+    .simple-table tr:last-child td { border-bottom: 0; }
+    .simple-table td:first-child { width: 56px; }
+    .simple-table td:nth-child(2) { font-weight: 800; color: var(--ink); }
+    .simple-table td strong { color: var(--ink); }
+    .simple-table .decision { font-weight: 800; color: var(--green); }
+    .simple-table .warn { color: var(--coral); font-weight: 800; }
+    .simple-table .no { color: var(--red); font-weight: 800; }
+
+    .rank {
+      display: inline-grid;
+      place-items: center;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 9px;
+      border-radius: 11px;
+      background: rgba(36,87,166,0.10);
+      color: var(--blue);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 15px;
+    }
+    .rank.gold { background: rgba(224,162,51,.18); color: var(--gold-ink); }
+    .rank.green { background: rgba(18,129,95,.14); color: var(--green); }
+    .rank.gray { background: rgba(21,34,63,.07); color: var(--muted); }
+
+    /* ============================================================
+       VERSUS (old / new)
+       ============================================================ */
+    .versus { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 28px; }
+    .old, .new { padding: 26px; border-radius: var(--r-lg); box-shadow: var(--shadow-md); }
+    .old { background: rgba(196,71,74,.07); border: 1px solid rgba(196,71,74,.18); }
+    .new { background: rgba(18,129,95,.07); border: 1px solid rgba(18,129,95,.18); }
+    .old h3, .new h3 { display: flex; align-items: center; gap: 10px; }
+    .old h3 { color: var(--red); }
+    .new h3 { color: var(--green); }
+    .versus h3 .tag {
+      width: 30px; height: 30px;
+      border-radius: 9px;
+      display: grid; place-items: center;
+    }
+    .old h3 .tag { background: rgba(196,71,74,.14); }
+    .new h3 .tag { background: rgba(18,129,95,.14); }
+    .versus h3 .tag svg { width: 17px; height: 17px; }
+
+    .checklist { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 12px; }
+    .checklist li { display: grid; grid-template-columns: 26px 1fr; gap: 11px; align-items: start; color: #41506a; font-size: 14.5px; line-height: 1.4; }
+    .checklist .icon {
+      width: 24px; height: 24px;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      margin-top: 1px;
+    }
+    .checklist .icon svg { width: 14px; height: 14px; stroke-width: 3; }
+    .old .icon { background: rgba(196,71,74,.13); color: var(--red); }
+    .new .icon { background: rgba(18,129,95,.13); color: var(--green); }
+
+    /* ============================================================
+       FLOW
+       ============================================================ */
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 30px; }
+    .flow-step {
+      position: relative;
+      padding: 20px 16px;
+      min-height: 156px;
+      border-radius: var(--r-lg);
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.85);
+      box-shadow: var(--shadow-sm);
+      transition: transform .35s, box-shadow .35s;
+    }
+    .flow-step:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -16px;
+      top: 48px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--navy) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center/15px no-repeat;
+      box-shadow: var(--shadow-sm);
+      z-index: 3;
+    }
+    .flow-step .mini {
+      width: 40px; height: 40px;
+      border-radius: 13px;
+      display: grid; place-items: center;
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 18px;
+      margin-bottom: 14px;
+    }
+    .flow-step h3 { font-size: 16px; }
+    .flow-step p { color: var(--muted); font-size: 13px; margin: 0; line-height: 1.45; }
+
+    /* ============================================================
+       DECISION TREE
+       ============================================================ */
+    .decision-tree { display: grid; gap: 14px; max-width: 1000px; margin: 30px auto 0; }
+    .tree-row { display: grid; grid-template-columns: 280px 1fr; align-items: stretch; gap: 16px; }
+    .question, .answer {
+      padding: 20px 22px;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255,255,255,0.82);
+      background: rgba(255,255,255,0.8);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .question {
+      font-weight: 800;
+      color: var(--ink-soft);
+      font-size: 16px;
+      background: rgba(21,34,63,0.04);
+      position: relative;
+      padding-left: 26px;
+    }
+    .question::before {
+      content: "";
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      width: 4px; height: 36px;
+      border-radius: 4px;
+      background: var(--accent);
+    }
+    .answer strong {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-family: var(--font-display);
+      font-size: 19px;
+      margin-bottom: 5px;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .answer strong .yes {
+      display: grid; place-items: center;
+      width: 22px; height: 22px;
+      border-radius: 7px;
+      background: rgba(18,129,95,.14);
+      color: var(--green);
+    }
+    .answer strong .yes svg { width: 13px; height: 13px; stroke-width: 3; }
+    .answer p { margin-bottom: 0; color: var(--muted); font-size: 14.5px; }
+
+    /* ============================================================
+       TIMELINE
+       ============================================================ */
+    .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
+    .time-card {
+      background: rgba(255,255,255,.84);
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: var(--r-lg);
+      padding: 26px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      transition: transform .35s, box-shadow .35s;
+    }
+    .time-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+    .time-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+    }
+    .time-card .day {
+      display: inline-flex;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent);
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      margin-bottom: 16px;
+    }
+    .time-card ul { padding-left: 0; list-style: none; color: var(--muted); margin-bottom: 0; }
+    .time-card li {
+      margin: 10px 0;
+      padding-left: 24px;
+      position: relative;
+      font-size: 14.5px;
+    }
+    .time-card li::before {
+      content: "";
+      position: absolute;
+      left: 2px; top: 8px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: .65;
+    }
+
+    /* ============================================================
+       QUOTE + MINI GRID
+       ============================================================ */
+    .quote {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 2.9vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      font-weight: 800;
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .panel .quote { color: var(--ink); }
+    .dark-panel .quote { color: #fff; }
+
+    .mini-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 22px; }
+    .mini-card {
+      padding: 18px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--line-strong);
+      background: rgba(255,255,255,.62);
+      transition: background .25s, transform .25s;
+    }
+    .mini-card:hover { background: rgba(255,255,255,.9); transform: translateY(-2px); }
+    .mini-card strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 15px; }
+    .mini-card span { color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+
+    /* ============================================================
+       BUTTONS + SOURCE
+       ============================================================ */
+    .button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 15px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255,255,255,.8);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform .25s, box-shadow .25s, background .25s;
+    }
+    .btn svg { width: 18px; height: 18px; }
+    .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .btn.primary:hover { background: var(--navy-deep); }
+
+    .source-note {
+      grid-column: 1 / -1;
+      font-size: 12.5px;
+      color: rgba(90,102,121,.9);
+      margin-top: 26px;
+      line-height: 1.55;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      max-width: 90ch;
+    }
+
+    /* ============================================================
+       REVEAL ANIMATIONS
+       ============================================================ */
+    .js .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+      will-change: opacity, transform;
+    }
+    .js .reveal.in { opacity: 1; transform: none; }
+
+    @keyframes rowIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .js .simple-table tbody tr { opacity: 0; }
+    .js .table-scroll.in tbody tr { animation: rowIn .55s cubic-bezier(.16,1,.3,1) both; }
+    .js .table-scroll.in tbody tr:nth-child(1) { animation-delay: .08s; }
+    .js .table-scroll.in tbody tr:nth-child(2) { animation-delay: .16s; }
+    .js .table-scroll.in tbody tr:nth-child(3) { animation-delay: .24s; }
+    .js .table-scroll.in tbody tr:nth-child(4) { animation-delay: .32s; }
+    .js .table-scroll.in tbody tr:nth-child(5) { animation-delay: .40s; }
+    .js .table-scroll.in tbody tr:nth-child(6) { animation-delay: .48s; }
+
+    .js .panel .mini-card { opacity: 0; }
+    .js .panel.in .mini-card { animation: rowIn .55s cubic-bezier(.16,1,.3,1) both; }
+    .js .panel.in .mini-card:nth-child(1) { animation-delay: .12s; }
+    .js .panel.in .mini-card:nth-child(2) { animation-delay: .20s; }
+    .js .panel.in .mini-card:nth-child(3) { animation-delay: .28s; }
+    .js .panel.in .mini-card:nth-child(4) { animation-delay: .36s; }
+    .js .panel.in .mini-card:nth-child(5) { animation-delay: .44s; }
+    .js .panel.in .mini-card:nth-child(6) { animation-delay: .52s; }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 1080px) {
+      .slide { padding: 100px 36px 60px; }
+      .rail { right: 14px; }
+    }
+    @media (max-width: 980px) {
+      .hero, .grid-2, .grid-3, .grid-4, .versus, .timeline, .mini-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow-step { min-height: auto; }
+      .flow-step:not(:last-child)::after {
+        right: auto; left: 28px; top: auto; bottom: -16px;
+        transform: rotate(90deg);
+      }
+      .tree-row { grid-template-columns: 1fr; }
+      .rail, .brand { display: none; }
+      .deck-controls {
+        bottom: 14px; top: auto;
+        width: calc(100% - 24px);
+        justify-content: center;
+        overflow-x: auto;
+      }
+      .deck-controls a:not(.keep) { display: none; }
+      .slide { padding: 60px 18px 92px; }
+      .slide-number { right: 16px; bottom: 70px; }
+      .table-scroll { display: block; overflow-x: auto; }
+      .simple-table { min-width: 720px; }
+    }
+    @media (max-width: 560px) {
+      .slide { padding: 56px 15px 92px; }
+      .panel, .dark-panel { padding: 22px; }
+      .card, .old, .new, .time-card { padding: 20px; }
+    }
+
+    /* ============================================================
+       REDUCED MOTION
+       ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; scroll-snap-type: none; }
+      .js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+      .js .simple-table tbody tr, .js .panel .mini-card { opacity: 1 !important; animation: none !important; }
+      .js .bar span { width: var(--w) !important; transition: none !important; }
+      .dot { animation: none; }
+      * { scroll-behavior: auto !important; }
+    }
+
+    /* ============================================================
+       PRINT
+       ============================================================ */
+    @media print {
+      body { background: #fff; background-attachment: scroll; }
+      .deck-controls, .progress, .rail, .brand { display: none !important; }
+      .slide { min-height: 100vh; page-break-after: always; padding: 0.5in; break-inside: avoid; }
+      .slide::before, .slide::after { display: none; }
+      .card, .panel, .dark-panel, .simple-table, .table-scroll, .time-card, .flow-step, .question, .answer, .callout, .old, .new { box-shadow: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      .simple-table tbody tr, .panel .mini-card { opacity: 1 !important; animation: none !important; }
+      .bar span { width: var(--w) !important; }
+      .grad, .score { -webkit-text-fill-color: currentColor !important; color: var(--ink) !important; background: none !important; }
+      @page { size: 16in 9in; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+  <a class="brand" href="#slide-1" aria-label="Journey — back to start">
+    <span class="mark">J</span>
+    Journey <span class="sep">· Software Decision</span>
+  </a>
+
+  <nav class="deck-controls" aria-label="Presentation controls">
+    <button id="prevBtn" type="button" aria-label="Previous slide">‹ Prev</button>
+    <span class="counter"><b id="curNum">01</b> / 12</span>
+    <button id="nextBtn" type="button" class="primary" aria-label="Next slide">Next ›</button>
+    <span class="divider" aria-hidden="true"></span>
+    <a href="#slide-4" class="keep">Table</a>
+    <a href="#slide-10">Plan</a>
+    <button type="button" onclick="window.print()">Print / PDF</button>
+  </nav>
+
+  <nav class="rail" aria-label="Slide navigation">
+    <a href="#slide-1"  data-label="Overview"></a>
+    <a href="#slide-2"  data-label="Recommendation"></a>
+    <a href="#slide-3"  data-label="Why it matters"></a>
+    <a href="#slide-4"  data-label="Final table"></a>
+    <a href="#slide-5"  data-label="Decision logic"></a>
+    <a href="#slide-6"  data-label="Must-haves"></a>
+    <a href="#slide-7"  data-label="System stack"></a>
+    <a href="#slide-8"  data-label="Buildium / DoorLoop"></a>
+    <a href="#slide-9"  data-label="Demo test"></a>
+    <a href="#slide-10" data-label="Rollout plan"></a>
+    <a href="#slide-11" data-label="Risks to verify"></a>
+    <a href="#slide-12" data-label="Final ask"></a>
+  </nav>
+
+  <!-- ============================ SLIDE 1 ============================ -->
+  <section class="slide" id="slide-1" aria-label="Overview">
+    <div class="wrap hero">
+      <div>
+        <div class="kicker reveal"><span class="dot"></span> Journey Real Estate · Software Decision</div>
+        <h1 class="reveal">Move from chaos to <span class="grad">one operating system.</span></h1>
+        <p class="lead reveal">A simple, boss-ready recommendation for the software Journey should use to manage master leases, shared rooms, tenants, rent, leases, payments, alerts, and communication.</p>
+        <div class="pill-row reveal">
+          <span class="pill green">Final answer inside</span>
+          <span class="pill blue">Built for shared-room complexity</span>
+          <span class="pill gold">June 2026 research</span>
+        </div>
+      </div>
+      <div class="dark-panel reveal">
+        <div class="big-verdict">
+          <div class="verdict-row">
+            <div class="num">1</div>
+            <div><strong>AppFolio Plus / Max</strong><span>Best long-term choice if Journey is at, or soon crossing, 50 units / beds.</span></div>
+          </div>
+          <div class="verdict-row">
+            <div class="num">2</div>
+            <div><strong>Hemlane or Rent Manager</strong><span>Best immediate options if AppFolio is too big, too expensive, or too heavy right now.</span></div>
+          </div>
+          <div class="verdict-row">
+            <div class="num">3</div>
+            <div><strong>ColivHQ as a pilot</strong><span>Interesting coliving-native tool, but verify U.S. payment rails before trusting it as the core system.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number">01</div>
+  </section>
+
+  <!-- ============================ SLIDE 2 ============================ -->
+  <section class="slide" id="slide-2" aria-label="The simple recommendation">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Executive answer</div>
+      <h2 class="reveal">The simple recommendation.</h2>
+      <p class="lead reveal">Journey should not buy a generic landlord tool. It needs a real system of record for shared-room property operations.</p>
+      <div class="grid-3">
+        <div class="card score-card reveal">
+          <span class="label">Best if eligible</span>
+          <h3>AppFolio Plus / Max</h3>
+          <div class="score" data-count="9.3">9.3</div>
+          <small>Best long-term fit</small>
+          <div class="bar"><span style="--w:93%"></span></div>
+          <p style="margin-top:16px;">Most convincing A-to-Z platform for leasing, rent, portal, documents, communication, turns, and student/shared housing.</p>
+        </div>
+        <div class="card score-card reveal">
+          <span class="label">Best fast start</span>
+          <h3>Hemlane</h3>
+          <div class="score" data-count="8.8">8.8</div>
+          <small>Best starter fit</small>
+          <div class="bar"><span style="--w:88%"></span></div>
+          <p style="margin-top:16px;">Strong per-room leasing, tenant support, lease reminders, e-sign, payments, and affordable rollout.</p>
+        </div>
+        <div class="card score-card reveal">
+          <span class="label">Best operations control</span>
+          <h3>Rent Manager</h3>
+          <div class="score" data-count="8.7">8.7</div>
+          <small>Best for messy operations</small>
+          <div class="bar"><span style="--w:87%"></span></div>
+          <p style="margin-top:16px;">Strong for shared-room exceptions, maintenance, make-ready, texts/calls, and staff accountability.</p>
+        </div>
+      </div>
+      <div class="callout reveal">
+        <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></span>
+        <p><strong>Final call:</strong> Demo AppFolio first. If it is too expensive or does not fit Journey’s current size, choose between Hemlane for simplicity and Rent Manager for deeper operational control.</p>
+      </div>
+    </div>
+    <div class="slide-number">02</div>
+  </section>
+
+  <!-- ============================ SLIDE 3 ============================ -->
+  <section class="slide" id="slide-3" aria-label="Why this matters">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Why this matters</div>
+      <h2 class="reveal">Journey’s current setup cannot scale.</h2>
+      <p class="lead reveal">Excel, PDFs, WhatsApp, and personal phones are fine early on. They break when the portfolio grows.</p>
+      <div class="versus">
+        <div class="old reveal">
+          <h3><span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span> Current state</h3>
+          <ul class="checklist">
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span>Rent records spread across spreadsheets</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span>Leases stored as scattered PDFs</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span>Tenant messages trapped in WhatsApp / phones</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span>Lease expirations managed reactively</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span>No true system of record for rooms, tenants, and payments</span></li>
+          </ul>
+        </div>
+        <div class="new reveal">
+          <h3><span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Future state</h3>
+          <ul class="checklist">
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>One database for buildings, units, rooms, beds, tenants, leases, and rent</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Tenant portal for rent, maintenance, leases, and documents</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Automated rent, reminders, alerts, and renewal workflow</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Centralized communication visible to the whole team</span></li>
+            <li><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Property-level P&amp;L for master lease margin</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number">03</div>
+  </section>
+
+  <!-- ============================ SLIDE 4 ============================ -->
+  <section class="slide" id="slide-4" aria-label="Final curated table">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Final curated table</div>
+      <h2 class="reveal">What software should Journey use?</h2>
+      <p class="lead reveal">This is the table to send to leadership. It keeps the decision simple.</p>
+      <div class="table-scroll reveal">
+        <table class="simple-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Software</th>
+              <th>Best use</th>
+              <th>Why it fits Journey</th>
+              <th>Main risk</th>
+              <th>Decision</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="rank gold">1</span></td>
+              <td><strong>AppFolio Plus / Max</strong></td>
+              <td>Best overall if Journey has 50+ units / beds or is close.</td>
+              <td>Strong all-in-one PMS with student housing, by-the-bed leasing, resident portal, payments, leasing, documents, communication, and turns.</td>
+              <td>50-unit minimum, quote pricing, Max may be expensive.</td>
+              <td class="decision">Demo first. Buy if economics work.</td>
+            </tr>
+            <tr>
+              <td><span class="rank green">2</span></td>
+              <td><strong>Hemlane</strong></td>
+              <td>Best immediate starter system.</td>
+              <td>Per-room leases, tenant portal, rent collection, lease reminders, e-sign, tenant support, affordable rollout.</td>
+              <td>Verify foreign-card payments and accounting depth.</td>
+              <td class="decision">Best fallback if AppFolio is too heavy.</td>
+            </tr>
+            <tr>
+              <td><span class="rank green">3</span></td>
+              <td><strong>Rent Manager</strong></td>
+              <td>Best if operations are messy and phone-heavy.</td>
+              <td>Strong roommate billing, make-ready boards, maintenance, lease renewals, texting, call history, reports, and workflows.</td>
+              <td>More setup and learning curve.</td>
+              <td class="decision">Demo next to Hemlane.</td>
+            </tr>
+            <tr>
+              <td><span class="rank">4</span></td>
+              <td><strong>ColivHQ</strong></td>
+              <td>Best coliving-native pilot.</td>
+              <td>Built around shared living, CRM pipeline, e-sign contracts, tenant portal, WhatsApp-style communication, and property-level P&amp;L.</td>
+              <td>Newer platform; U.S. payment and screening readiness must be proven.</td>
+              <td class="warn">Pilot only, not core yet.</td>
+            </tr>
+            <tr>
+              <td><span class="rank gray">5</span></td>
+              <td><strong>TheHouseMonk</strong></td>
+              <td>Specialist option for multi-currency / white-label portal.</td>
+              <td>Good coliving workflows, lead-to-lease, invoicing, reminders, maintenance, and branded app/website.</td>
+              <td>U.S. payment rails and support model need proof.</td>
+              <td>Demo only after top 3.</td>
+            </tr>
+            <tr>
+              <td><span class="rank gray">—</span></td>
+              <td><strong>Buildium / DoorLoop</strong></td>
+              <td>General property management.</td>
+              <td>Clean general tools, but not ideal for true separate room / bed operations.</td>
+              <td>Room-by-room setup is awkward; international payments are weaker.</td>
+              <td class="no">Do not use as core PMS.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="slide-number">04</div>
+  </section>
+
+  <!-- ============================ SLIDE 5 ============================ -->
+  <section class="slide" id="slide-5" aria-label="Decision logic">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Decision logic</div>
+      <h2 class="reveal">Choose based on Journey’s current size and pain point.</h2>
+      <div class="decision-tree">
+        <div class="tree-row reveal">
+          <div class="question">Are we at / near 50 units or beds?</div>
+          <div class="answer"><strong><span class="yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Yes → AppFolio Plus / Max</strong><p>Best long-term operating system if the minimum and pricing make sense.</p></div>
+        </div>
+        <div class="tree-row reveal">
+          <div class="question">Are we below AppFolio’s threshold?</div>
+          <div class="answer"><strong><span class="yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Yes → Hemlane</strong><p>Fastest clean upgrade from Excel, WhatsApp, and PDFs into one usable platform.</p></div>
+        </div>
+        <div class="tree-row reveal">
+          <div class="question">Is phone/chat chaos the biggest issue?</div>
+          <div class="answer"><strong><span class="yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Yes → Rent Manager</strong><p>Best fit when the team needs operational tracking, communication history, and exception handling.</p></div>
+        </div>
+        <div class="tree-row reveal">
+          <div class="question">Do we want a coliving-native experiment?</div>
+          <div class="answer"><strong><span class="yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Yes → ColivHQ pilot</strong><p>Test 1–2 properties only. Do not rely on it until U.S. payment, screening, and support are proven.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number">05</div>
+  </section>
+
+  <!-- ============================ SLIDE 6 ============================ -->
+  <section class="slide" id="slide-6" aria-label="The non-negotiables">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> What the system must do</div>
+      <h2 class="reveal">The non-negotiables.</h2>
+      <p class="lead reveal">Any vendor that cannot handle these should be removed from consideration.</p>
+      <div class="grid-3">
+        <div class="card reveal"><span class="label">01</span><h3>Room / bed leasing</h3><p>Separate tenant leases, ledgers, move-in dates, move-out dates, and payments inside one apartment.</p></div>
+        <div class="card reveal"><span class="label">02</span><h3>Rent collection</h3><p>Autopay, recurring rent, late fees, security deposits, and international payment backup.</p></div>
+        <div class="card reveal"><span class="label">03</span><h3>Tenant portal</h3><p>Pay rent, sign leases, submit maintenance, view documents, and communicate in one place.</p></div>
+        <div class="card reveal"><span class="label">04</span><h3>Lease expiration alerts</h3><p>30/60-day alerts that trigger renewal, replacement, listing, and turnover workflows.</p></div>
+        <div class="card reveal"><span class="label">05</span><h3>Document storage</h3><p>Central lease vault with e-signature, tenant IDs, applications, and compliance docs.</p></div>
+        <div class="card reveal"><span class="label">06</span><h3>Central communication</h3><p>Stop relying on personal phones. Every message and request must live in the company system.</p></div>
+      </div>
+    </div>
+    <div class="slide-number">06</div>
+  </section>
+
+  <!-- ============================ SLIDE 7 ============================ -->
+  <section class="slide" id="slide-7" aria-label="Recommended system stack">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Recommended system stack</div>
+      <h2 class="reveal">Do not make one tool do everything.</h2>
+      <p class="lead reveal">Use one core PMS as the system of record. Add a separate CRM only for building-owner / master-lease deal sourcing.</p>
+      <div class="flow">
+        <div class="flow-step reveal"><div class="mini">1</div><h3>Core PMS</h3><p>AppFolio, Hemlane, or Rent Manager. This owns tenants, rooms, leases, rent, documents, maintenance, and renewals.</p></div>
+        <div class="flow-step reveal"><div class="mini">2</div><h3>Owner CRM</h3><p>Zoho, Pipedrive, or HubSpot for building owners, master lease prospects, follow-ups, and deal pipeline.</p></div>
+        <div class="flow-step reveal"><div class="mini">3</div><h3>Payment backup</h3><p>Native PMS payments first. Stripe, Flywire, or Wise as backup for foreign-card / international rent issues.</p></div>
+        <div class="flow-step reveal"><div class="mini">4</div><h3>Website / portal</h3><p>Use the PMS portal first. Build custom website pages around it once operations are stable.</p></div>
+        <div class="flow-step reveal"><div class="mini">5</div><h3>Automation</h3><p>n8n or Zapier after clean data exists: lease alerts, vacancy workflows, turnover tasks, and CRM sync.</p></div>
+      </div>
+      <div class="callout reveal">
+        <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <p><strong>Core principle:</strong> First create the system of record. Then automate. Automating messy data just creates prettier chaos.</p>
+      </div>
+    </div>
+    <div class="slide-number">07</div>
+  </section>
+
+  <!-- ============================ SLIDE 8 ============================ -->
+  <section class="slide" id="slide-8" aria-label="Why not Buildium or DoorLoop">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Why not Buildium / DoorLoop?</div>
+      <h2 class="reveal">They are good tools, but not for Journey’s exact model.</h2>
+      <div class="grid-2">
+        <div class="card reveal">
+          <span class="label">Buildium</span>
+          <h3>Good general PMS. Weak fit for shared-room structure.</h3>
+          <p>Buildium can work through a “bedroom = unit” workaround, but that can make accounting, pricing, and shared-apartment management messier.</p>
+          <div class="pill-row"><span class="pill gold">Good for normal rentals</span><span class="pill red">Not ideal for by-bed</span></div>
+        </div>
+        <div class="card reveal">
+          <span class="label">DoorLoop</span>
+          <h3>Modern and easy. But the leasing model is the issue.</h3>
+          <p>DoorLoop is attractive for smaller landlords, but true overlapping separate leases inside one unit are the concern for Journey’s shared-room operation.</p>
+          <div class="pill-row"><span class="pill gold">Simple UI</span><span class="pill red">Roommate limits</span></div>
+        </div>
+      </div>
+      <div class="callout reveal">
+        <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>
+        <p><strong>Boss version:</strong> Do not choose software because it looks clean. Choose software that understands one apartment can contain multiple unrelated tenants with separate leases and separate payments.</p>
+      </div>
+    </div>
+    <div class="slide-number">08</div>
+  </section>
+
+  <!-- ============================ SLIDE 9 ============================ -->
+  <section class="slide" id="slide-9" aria-label="The demo test">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Demo test</div>
+      <h2 class="reveal">The exact workflow every vendor must prove.</h2>
+      <p class="lead reveal">Do not let vendors sell from a feature list. Make them run Journey’s real workflow live.</p>
+      <div class="panel reveal">
+        <div class="quote">“Show us building → apartment → room/bed → tenant → lease → payment → expiration alert → turnover → replacement tenant.”</div>
+        <div class="mini-grid">
+          <div class="mini-card"><strong>1. Master lease setup</strong><span>Create a building with guaranteed rent owed to the owner.</span></div>
+          <div class="mini-card"><strong>2. Shared apartment</strong><span>Create one apartment with multiple separately rented rooms/beds.</span></div>
+          <div class="mini-card"><strong>3. Tenant onboarding</strong><span>Application, approval, lease generation, e-signature, and document storage.</span></div>
+          <div class="mini-card"><strong>4. Rent collection</strong><span>Recurring rent, deposit, late fee, and international-card scenario.</span></div>
+          <div class="mini-card"><strong>5. Expiration alert</strong><span>Show 30/60-day alert and renewal or replacement workflow.</span></div>
+          <div class="mini-card"><strong>6. Turnover</strong><span>Move-out, cleaning/renovation task, make-ready status, relisting.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-number">09</div>
+  </section>
+
+  <!-- ============================ SLIDE 10 ============================ -->
+  <section class="slide" id="slide-10" aria-label="Rollout plan">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Rollout plan</div>
+      <h2 class="reveal">Implementation should be phased, not chaotic.</h2>
+      <p class="lead reveal">The goal is not to automate everything on day one. The goal is to get clean data into one system first.</p>
+      <div class="timeline">
+        <div class="time-card reveal">
+          <span class="day">Phase 1 · Setup</span>
+          <h3>Build the database</h3>
+          <ul>
+            <li>Buildings</li>
+            <li>Apartments / units</li>
+            <li>Rooms / beds</li>
+            <li>Tenants and contacts</li>
+            <li>Current lease dates</li>
+          </ul>
+        </div>
+        <div class="time-card reveal">
+          <span class="day">Phase 2 · Money + documents</span>
+          <h3>Turn on operations</h3>
+          <ul>
+            <li>Recurring tenant rent</li>
+            <li>Owner payables</li>
+            <li>Security deposits</li>
+            <li>Lease templates</li>
+            <li>Signed lease storage</li>
+          </ul>
+        </div>
+        <div class="time-card reveal">
+          <span class="day">Phase 3 · Automation</span>
+          <h3>Scale the workflow</h3>
+          <ul>
+            <li>Tenant portal</li>
+            <li>Online payments</li>
+            <li>Lease expiration alerts</li>
+            <li>Renewal workflows</li>
+            <li>Turnover / make-ready tasks</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout reveal">
+        <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/><circle cx="7" cy="7" r="1.6" fill="currentColor" stroke="none"/><circle cx="13" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="9" cy="17" r="1.6" fill="currentColor" stroke="none"/></svg></span>
+        <p><strong>Required data model:</strong> Building → apartment/unit → room/bed → resident → lease → recurring charges/payables.</p>
+      </div>
+    </div>
+    <div class="slide-number">10</div>
+  </section>
+
+  <!-- ============================ SLIDE 11 ============================ -->
+  <section class="slide" id="slide-11" aria-label="Risks to verify">
+    <div class="wrap">
+      <div class="kicker reveal"><span class="dot"></span> Risks to verify</div>
+      <h2 class="reveal">Four questions before signing.</h2>
+      <div class="grid-4">
+        <div class="card reveal"><span class="label">Risk 1</span><h3>Unit minimum</h3><p>Does AppFolio count beds/rooms favorably enough for Journey to clear the 50-unit economics?</p></div>
+        <div class="card reveal"><span class="label">Risk 2</span><h3>Foreign payments</h3><p>Can international students pay rent without a U.S. bank account? What are the real card fees?</p></div>
+        <div class="card reveal"><span class="label">Risk 3</span><h3>Room-level leases</h3><p>Is it truly separate leases and ledgers per room/bed, or just a workaround?</p></div>
+        <div class="card reveal"><span class="label">Risk 4</span><h3>Implementation cost</h3><p>What are setup fees, training costs, required add-ons, and support tiers?</p></div>
+      </div>
+      <div class="callout reveal">
+        <span class="c-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V7a3 3 0 0 1 6 0v4"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></span>
+        <p><strong>Decision rule:</strong> No vendor should be selected until they prove room-level leasing, international payment handling, and expiration/turnover workflow in a live demo.</p>
+      </div>
+    </div>
+    <div class="slide-number">11</div>
+  </section>
+
+  <!-- ============================ SLIDE 12 ============================ -->
+  <section class="slide" id="slide-12" aria-label="Final ask">
+    <div class="wrap hero">
+      <div>
+        <div class="kicker reveal"><span class="dot"></span> Final ask</div>
+        <h2 class="reveal">Approve demos with the top three.</h2>
+        <p class="lead reveal">The decision does not need to be complicated. Journey should compare AppFolio, Hemlane, and Rent Manager using the same live workflow test.</p>
+        <div class="button-row reveal">
+          <a class="btn primary" href="#slide-4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M3 12h18M3 19h18"/></svg>
+            View final table
+          </a>
+          <a class="btn" href="#slide-9">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            View demo test
+          </a>
+        </div>
+      </div>
+      <div class="dark-panel reveal">
+        <div class="quote">Final recommendation: AppFolio if eligible. Hemlane if speed and simplicity matter most. Rent Manager if operational control matters most.</div>
+        <p>ColivHQ is worth a small pilot, but not the core system until U.S. payments, screening, support, and maturity are proven.</p>
+        <div class="pill-row">
+          <span class="pill green">Primary: AppFolio</span>
+          <span class="pill blue">Fallback: Hemlane</span>
+          <span class="pill gold">Ops-heavy: Rent Manager</span>
+        </div>
+      </div>
+      <p class="source-note reveal">Source base: synthesized from the three internal Journey software research reports uploaded June 3, 2026. Pricing, payment rails, implementation costs, and minimums should be confirmed directly with vendors before purchase.</p>
+    </div>
+    <div class="slide-number">12</div>
+  </section>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const bar = document.getElementById('progressBar');
+      const curNum = document.getElementById('curNum');
+      const railLinks = Array.from(document.querySelectorAll('.rail a'));
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      /* ---- Staggered reveal delays, grouped per slide ---- */
+      if (document.documentElement.classList.contains('js') && !reduce) {
+        slides.forEach((slide) => {
+          Array.from(slide.querySelectorAll('.reveal')).forEach((el, i) => {
+            el.style.transitionDelay = Math.min(i * 60, 360) + 'ms';
+          });
+        });
+      }
+
+      /* ---- Reveal on scroll ---- */
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+      document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+
+      /* ---- Count-up scores ---- */
+      function animateCount(el) {
+        const target = parseFloat(el.dataset.count);
+        if (reduce) { el.textContent = target.toFixed(1); return; }
+        const duration = 950;
+        const start = performance.now();
+        (function tick(now) {
+          const p = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = (target * eased).toFixed(1);
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = target.toFixed(1);
+        })(start);
+      }
+      const countObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            countObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.6 });
+      document.querySelectorAll('[data-count]').forEach((el) => countObserver.observe(el));
+
+      /* ---- Navigation ---- */
+      function currentSlideIndex() {
+        const probe = window.scrollY + window.innerHeight * 0.35;
+        let index = 0;
+        slides.forEach((slide, i) => { if (slide.offsetTop <= probe) index = i; });
+        return index;
+      }
+      function goToSlide(index) {
+        const safe = Math.max(0, Math.min(slides.length - 1, index));
+        slides[safe].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      }
+
+      document.getElementById('nextBtn').addEventListener('click', () => goToSlide(currentSlideIndex() + 1));
+      document.getElementById('prevBtn').addEventListener('click', () => goToSlide(currentSlideIndex() - 1));
+      railLinks.forEach((a, i) => a.addEventListener('click', (e) => { e.preventDefault(); goToSlide(i); }));
+
+      window.addEventListener('keydown', (e) => {
+        if (e.target.matches('input, textarea, select')) return;
+        if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); goToSlide(currentSlideIndex() + 1); }
+        else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); goToSlide(currentSlideIndex() - 1); }
+        else if (e.key === 'Home') { e.preventDefault(); goToSlide(0); }
+        else if (e.key === 'End') { e.preventDefault(); goToSlide(slides.length - 1); }
+      });
+
+      /* ---- Progress bar + counter + active rail dot ---- */
+      function update() {
+        const index = currentSlideIndex();
+        const pct = slides.length <= 1 ? 100 : (index / (slides.length - 1)) * 100;
+        bar.style.width = pct + '%';
+        if (curNum) curNum.textContent = String(index + 1).padStart(2, '0');
+        railLinks.forEach((a, j) => a.setAttribute('aria-current', j === index ? 'true' : 'false'));
+      }
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) { requestAnimationFrame(() => { update(); ticking = false; }); ticking = true; }
+      }, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    })();
+  </script>
+</body>
+</html>
